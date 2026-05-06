@@ -1,0 +1,541 @@
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix oriont: <https://orienting.eu/oriont#> .
+@prefix oriont-ext: <https://orienting.eu/oriont-ext#> .
+
+# =============================================================================
+# R2RML Mapping: LCA HDPE Dataset + Characterisation Factors
+# =============================================================================
+# Converted from RML to R2RML for OnTop Virtual Knowledge Graph
+# Tables: hdpe_flows, characterisation_factors (MySQL database: lca)
+# =============================================================================
+
+
+# #############################################################################
+# PART 1: HDPE FLOW DATA MAPPINGS
+# #############################################################################
+
+# =============================================================================
+# ACTIVITY
+# =============================================================================
+
+<#ActivityMap>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT DISTINCT activity
+            FROM hdpe_flows
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/activity/{activity}" ;
+        rr:class oriont:Activity
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [ rr:column "activity" ; rr:language "en" ]
+    ] .
+
+# =============================================================================
+# INPUT FLOWS (flow_direction = 'Input')
+# =============================================================================
+
+<#InputFlowMap>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT * FROM hdpe_flows
+            WHERE flow_direction = 'Input'
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/flow/{activity}_{flow}_{flow_direction}_{measure}"
+    ] ;
+
+    # Dynamic rdf:type from flow_type column
+    rr:predicateObjectMap [
+        rr:predicate rdf:type ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/oriont#{flow_type}"
+        ]
+    ] ;
+
+    # Flow Name
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasFlowName ;
+        rr:objectMap [ rr:column "flow" ; rr:datatype xsd:string ]
+    ] ;
+
+    # Measure Value
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasMeasureValue ;
+        rr:objectMap [ rr:column "measure" ; rr:datatype xsd:decimal ]
+    ] ;
+
+    # Unit
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasMeasureUnit ;
+        rr:objectMap [ rr:column "unit" ; rr:datatype xsd:string ]
+    ] ;
+
+    # Label
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [
+            rr:template "{flow} (Input)" ;
+            rr:termType rr:Literal
+        ]
+    ] ;
+
+    # Link to FlowObject
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasObjectType ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/flowobj/{flow}"
+        ]
+    ] ;
+
+    # Link to Activity via isInputOf
+    rr:predicateObjectMap [
+        rr:predicate oriont:isInputOf ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/activity/{activity}"
+        ]
+    ] ;
+
+    # EFCategorisation link
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasEFCategorisation ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/efcat/{kategorie}"
+        ]
+    ] ;
+
+    # FlowClassification link
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasFlowClassification ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/flowclass/{kategorie}"
+        ]
+    ] .
+
+# =============================================================================
+# OUTPUT FLOWS (flow_direction = 'Output')
+# =============================================================================
+
+<#OutputFlowMap>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT * FROM hdpe_flows
+            WHERE flow_direction = 'Output'
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/flow/{activity}_{flow}_{flow_direction}_{measure}"
+    ] ;
+
+    # Dynamic rdf:type from flow_type column
+    rr:predicateObjectMap [
+        rr:predicate rdf:type ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/oriont#{flow_type}"
+        ]
+    ] ;
+
+    # Flow Name
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasFlowName ;
+        rr:objectMap [ rr:column "flow" ; rr:datatype xsd:string ]
+    ] ;
+
+    # Measure Value
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasMeasureValue ;
+        rr:objectMap [ rr:column "measure" ; rr:datatype xsd:decimal ]
+    ] ;
+
+    # Unit
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasMeasureUnit ;
+        rr:objectMap [ rr:column "unit" ; rr:datatype xsd:string ]
+    ] ;
+
+    # Label
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [
+            rr:template "{flow} (Output)" ;
+            rr:termType rr:Literal
+        ]
+    ] ;
+
+    # Link to FlowObject
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasObjectType ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/flowobj/{flow}"
+        ]
+    ] ;
+
+    # Link to Activity via isOutputOf
+    rr:predicateObjectMap [
+        rr:predicate oriont:isOutputOf ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/activity/{activity}"
+        ]
+    ] ;
+
+    # EFCategorisation link
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasEFCategorisation ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/efcat/{kategorie}"
+        ]
+    ] ;
+
+    # FlowClassification link
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasFlowClassification ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/flowclass/{kategorie}"
+        ]
+    ] .
+
+# =============================================================================
+# FlowObject from HDPE data
+# =============================================================================
+
+<#FlowObjectMap>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT DISTINCT flow
+            FROM hdpe_flows
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/flowobj/{flow}" ;
+        rr:class oriont:FlowObject
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [ rr:column "flow" ; rr:language "en" ]
+    ] .
+
+# =============================================================================
+# FlowClassification Instances
+# =============================================================================
+
+<#FlowClassificationMap>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT DISTINCT kategorie
+            FROM hdpe_flows
+            WHERE kategorie IS NOT NULL
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/flowclass/{kategorie}" ;
+        rr:class oriont:FlowClassification
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [ rr:column "kategorie" ; rr:language "en" ]
+    ] .
+
+# =============================================================================
+# EFCategorisation from HDPE data
+# =============================================================================
+
+<#EFCategorisationMapHDPE>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT DISTINCT kategorie
+            FROM hdpe_flows
+            WHERE kategorie IS NOT NULL
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/efcat/{kategorie}" ;
+        rr:class oriont:EFCategorisation
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [ rr:column "kategorie" ; rr:language "en" ]
+    ] .
+
+
+# #############################################################################
+# PART 2: CHARACTERISATION FACTORS MAPPINGS
+# #############################################################################
+
+# =============================================================================
+# FlowObject from CF data (for matching with HDPE flows)
+# =============================================================================
+
+<#CFFlowObjectMap>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT DISTINCT elementary_flow
+            FROM characterisation_factors
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/flowobj/{elementary_flow}" ;
+        rr:class oriont:FlowObject
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasFlowObjectName ;
+        rr:objectMap [ rr:column "elementary_flow" ; rr:datatype xsd:string ]
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [ rr:column "elementary_flow" ; rr:language "en" ]
+    ] .
+
+# =============================================================================
+# EFCategorisation from CF data
+# =============================================================================
+
+<#EFCategorisationMapCF>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT DISTINCT ef_categories
+            FROM characterisation_factors
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/efcat/{ef_categories}" ;
+        rr:class oriont:EFCategorisation
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasCategoryPath ;
+        rr:objectMap [ rr:column "ef_categories" ; rr:datatype xsd:string ]
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [ rr:column "ef_categories" ; rr:language "en" ]
+    ] .
+
+# =============================================================================
+# CF (Characterisation Factor) Instances
+# =============================================================================
+
+<#CFMap>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT * FROM characterisation_factors
+            WHERE ef_categories LIKE '%unspecified%'
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/cf/{elementary_flow}_{ef_categories}" ;
+        rr:class oriont:CF
+    ] ;
+
+    # CF Value
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasCFValue ;
+        rr:objectMap [ rr:column "cf" ; rr:datatype xsd:decimal ]
+    ] ;
+
+    # Link to FlowObject (direct IRI template instead of join)
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasReferenceFlow ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/flowobj/{elementary_flow}"
+        ]
+    ] ;
+
+    # Link to EFCategorisation (for matching with HDPE flows)
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasEFCategorisation ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/efcat/{ef_categories}"
+        ]
+    ] ;
+
+    # Link to CFUnit
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasCFUnit ;
+        rr:objectMap [
+            rr:template "https://orienting.eu/data/cfunit/{cf_unit}"
+        ]
+    ] ;
+
+    # Link to ImpactCategoryIndicator (static)
+    rr:predicateObjectMap [
+        rr:predicate oriont:quantifiesImpactIndicator ;
+        rr:objectMap [
+            rr:constant <https://orienting.eu/data/indicator/ClimateChangeGWP100a>
+        ]
+    ] ;
+
+    # Label
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [
+            rr:template "CF: {elementary_flow} ({ef_categories})" ;
+            rr:termType rr:Literal
+        ]
+    ] .
+
+# =============================================================================
+# CFUnit Instances
+# =============================================================================
+
+<#CFUnitMap>
+    rr:logicalTable [
+        rr:sqlQuery """
+            SELECT DISTINCT cf_unit
+            FROM characterisation_factors
+            WHERE cf_unit IS NOT NULL
+        """
+    ] ;
+
+    rr:subjectMap [
+        rr:template "https://orienting.eu/data/cfunit/{cf_unit}" ;
+        rr:class oriont:CFUnit
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate oriont-ext:hasCFUnitLabel ;
+        rr:objectMap [ rr:column "cf_unit" ; rr:datatype xsd:string ]
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [ rr:column "cf_unit" ; rr:language "en" ]
+    ] .
+
+# =============================================================================
+# Static Instances: ImpactCategoryIndicator
+# =============================================================================
+
+<#ImpactCategoryIndicatorMap>
+    rr:logicalTable [
+        rr:sqlQuery "SELECT 1 AS dummy FROM characterisation_factors LIMIT 1"
+    ] ;
+
+    rr:subjectMap [
+        rr:constant <https://orienting.eu/data/indicator/ClimateChangeGWP100a> ;
+        rr:class oriont:ImpactCategoryIndicator
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasIndicatorName ;
+        rr:objectMap [
+            rr:constant <https://orienting.eu/data/indicatorname/ClimateChange>
+        ]
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasIndicatorUnit ;
+        rr:objectMap [
+            rr:constant <https://orienting.eu/data/indicatorunit/kgCO2eq>
+        ]
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate oriont:assessesImpactCategory ;
+        rr:objectMap [
+            rr:constant <https://orienting.eu/data/impactcategory/ClimateChange>
+        ]
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [
+            rr:constant "Climate Change - GWP100a (IPCC 2017)" ;
+            rr:language "en"
+        ]
+    ] .
+
+# =============================================================================
+# Static Instances: ImpactCategory
+# =============================================================================
+
+<#ImpactCategoryMap>
+    rr:logicalTable [
+        rr:sqlQuery "SELECT 1 AS dummy FROM characterisation_factors LIMIT 1"
+    ] ;
+
+    rr:subjectMap [
+        rr:constant <https://orienting.eu/data/impactcategory/ClimateChange> ;
+        rr:class oriont:ImpactCategory
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate oriont:hasImpactCategoryName ;
+        rr:objectMap [
+            rr:constant <https://orienting.eu/oriont#Climate%20change>
+        ]
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [
+            rr:constant "Climate Change" ;
+            rr:language "en"
+        ]
+    ] .
+
+# =============================================================================
+# Static Instances: IndicatorName
+# =============================================================================
+
+<#IndicatorNameMap>
+    rr:logicalTable [
+        rr:sqlQuery "SELECT 1 AS dummy FROM characterisation_factors LIMIT 1"
+    ] ;
+
+    rr:subjectMap [
+        rr:constant <https://orienting.eu/data/indicatorname/ClimateChange> ;
+        rr:class oriont:IndicatorName
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [
+            rr:constant "Climate Change" ;
+            rr:language "en"
+        ]
+    ] .
+
+# =============================================================================
+# Static Instances: IndicatorUnit
+# =============================================================================
+
+<#IndicatorUnitMap>
+    rr:logicalTable [
+        rr:sqlQuery "SELECT 1 AS dummy FROM characterisation_factors LIMIT 1"
+    ] ;
+
+    rr:subjectMap [
+        rr:constant <https://orienting.eu/data/indicatorunit/kgCO2eq> ;
+        rr:class oriont:IndicatorUnit
+    ] ;
+
+    rr:predicateObjectMap [
+        rr:predicate rdfs:label ;
+        rr:objectMap [
+            rr:constant "kg CO2 eq" ;
+            rr:language "en"
+        ]
+    ] .

@@ -1,0 +1,82 @@
+title = "LCA HDPE SPARQL Endpoint"
+
+[endpoint]
+address = "0.0.0.0:8080"
+
+[[tabGroups]]
+name = "Example Queries"
+
+[[tabGroups.tabs]]
+name = "All Activities"
+query = """
+PREFIX oriont: <https://orienting.eu/oriont#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?activity ?label WHERE {
+    ?activity a oriont:Activity ;
+              rdfs:label ?label .
+}
+LIMIT 20
+"""
+
+[[tabGroups.tabs]]
+name = "Elementary Flows (Inputs)"
+query = """
+PREFIX oriont: <https://orienting.eu/oriont#>
+PREFIX oriont-ext: <https://orienting.eu/oriont-ext#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?flowName ?measure ?unit WHERE {
+    ?flow a oriont:ElementaryFlow ;
+          oriont:hasFlowDirection oriont:Input ;
+          oriont-ext:hasFlowName ?flowName ;
+          oriont-ext:hasMeasureValue ?measure ;
+          oriont-ext:hasMeasureUnit ?unit .
+}
+ORDER BY DESC(?measure)
+LIMIT 20
+"""
+
+[[tabGroups.tabs]]
+name = "Flows with Characterisation Factors"
+query = """
+PREFIX oriont: <https://orienting.eu/oriont#>
+PREFIX oriont-ext: <https://orienting.eu/oriont-ext#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?flowName ?measure ?cfValue ?cfUnit WHERE {
+    ?flow a oriont:ElementaryFlow ;
+          oriont:hasObjectType ?flowObj ;
+          oriont-ext:hasFlowName ?flowName ;
+          oriont-ext:hasMeasureValue ?measure .
+
+    ?cf oriont:hasReferenceFlow ?flowObj ;
+        oriont-ext:hasCFValue ?cfValue ;
+        oriont:hasCFUnit ?unit .
+
+    ?unit rdfs:label ?cfUnit .
+}
+LIMIT 20
+"""
+
+[[tabGroups.tabs]]
+name = "Climate Impact Calculation"
+query = """
+PREFIX oriont: <https://orienting.eu/oriont#>
+PREFIX oriont-ext: <https://orienting.eu/oriont-ext#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?flowName (SUM(?measure * ?cfValue) AS ?climateImpact) WHERE {
+    ?flow a oriont:ElementaryFlow ;
+          oriont:hasObjectType ?flowObj ;
+          oriont-ext:hasFlowName ?flowName ;
+          oriont-ext:hasMeasureValue ?measure .
+
+    ?cf oriont:hasReferenceFlow ?flowObj ;
+        oriont-ext:hasCFValue ?cfValue .
+}
+GROUP BY ?flowName
+HAVING (SUM(?measure * ?cfValue) > 0)
+ORDER BY DESC(?climateImpact)
+LIMIT 20
+"""

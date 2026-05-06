@@ -1,0 +1,10 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+@prefix enoptl: <http://example.org/ontology/energy-ptl#> .
+
+eno:UnitFacilityOwner eno:UnitFacilityOwnerShare xsd:decimal ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateTUFOwnerValidFrom xsd:date ;
+    eno:dateTUFOwnerValidTo xsd:date ;
+    enoptl:UnitFacilityOwnerCompany eno:Company ;
+    enoptl:UnitFacilityOwnerForLicence enoptl:UnitFacility .

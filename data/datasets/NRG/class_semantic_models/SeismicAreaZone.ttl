@@ -1,0 +1,9 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:SeismicAreaZone eno:dateApproved xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateZoneValidFrom xsd:date ;
+    eno:dateZoneValidTo xsd:date ;
+    eno:designation xsd:string ;
+    eno:registryId xsd:integer .

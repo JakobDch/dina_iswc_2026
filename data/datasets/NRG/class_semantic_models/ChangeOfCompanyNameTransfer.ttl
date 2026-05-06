@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:ChangeOfCompanyNameTransfer eno:SDFI xsd:decimal ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateTransferValidFrom xsd:date ;
+    eno:transferDirection xsd:string ;
+    eno:transferredInterest xsd:decimal ;
+    eno:licenceTransferCompany eno:Company ;
+    eno:transferredBAA eno:UnitizedZone ;
+    eno:transferredLicence eno:ExtractionPermit .

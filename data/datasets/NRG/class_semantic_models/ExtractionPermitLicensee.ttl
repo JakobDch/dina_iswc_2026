@@ -1,0 +1,12 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:ExtractionPermitLicensee eno:SDFI xsd:decimal ;
+    eno:dateLicenseeValidFrom xsd:date ;
+    eno:dateLicenseeValidTo xsd:date ;
+    eno:dateOperatorValidFrom xsd:date ;
+    eno:dateOperatorValidTo xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:licenseeInterest xsd:decimal ;
+    eno:licenceLicensee eno:Company ;
+    eno:licenseeForLicence eno:ExtractionPermit .

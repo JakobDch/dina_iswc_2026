@@ -1,0 +1,10 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:MoveableFacility eno:dateSynchronized xsd:date ;
+    eno:dateUpdated xsd:date ;
+    eno:designation xsd:string ;
+    eno:facilityFunction xsd:string ;
+    eno:facilityType xsd:string ;
+    eno:registryId xsd:integer ;
+    eno:currentResponsibleCompany eno:Company .

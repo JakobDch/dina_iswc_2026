@@ -1,0 +1,10 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:WellboreDrillingMudSample eno:dateMudMeasured xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:mudMeasuredDepth xsd:decimal ;
+    eno:mudType xsd:string ;
+    eno:mudViscosity xsd:decimal ;
+    eno:mudWeight xsd:decimal ;
+    eno:mudYieldPoint xsd:decimal .

@@ -1,0 +1,7 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:FieldInvestment eno:dateSynchronized xsd:date ;
+    eno:investmentNOK xsd:decimal ;
+    eno:outputYear xsd:integer ;
+    eno:investmentForField eno:Deposit .

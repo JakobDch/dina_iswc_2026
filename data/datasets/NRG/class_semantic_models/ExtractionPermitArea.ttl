@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:ExtractionPermitArea eno:ZValueFrom xsd:integer ;
+    eno:ZValueTo xsd:integer ;
+    eno:dateLicenceAreaValidFrom xsd:date ;
+    eno:dateLicenceAreaValidTo xsd:date ;
+    eno:isActive xsd:string ;
+    eno:isStratigraphical xsd:string ;
+    eno:isGeometryOfFeature eno:ExtractionPermit ;
+    eno:lastOperatorCompany eno:Company .

@@ -1,0 +1,10 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:OperatingZoneLicensee eno:SDFI xsd:decimal ;
+    eno:dateBaaLicenseeValidFrom xsd:date ;
+    eno:dateBaaLicenseeValidTo xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:licenseeInterest xsd:decimal ;
+    eno:baaLicensee eno:Company ;
+    eno:licenseeForBAA eno:UnitizedZone .

@@ -1,0 +1,22 @@
+Agentic Text-to-SPARQL Experiment (ISWC 2026 artefact)
+========================================================
+
+This repository contains software released under the MIT licence (see
+LICENSE). It also bundles third-party code, kept under its original
+licence:
+
+CHESS
+-----
+Path:    tools/chess/
+Origin:  https://github.com/ShayanTalaei/CHESS
+Licence: Apache License 2.0 (see tools/chess/LICENSE)
+
+The vendored copy has been pruned of intermediate run artefacts and
+local environment files; the source code under tools/chess/src/ is
+unchanged from the upstream version aside from minor portability fixes
+listed in CHANGES_TO_CHESS.md (if present).
+
+Datasets used for evaluation (LUBM, GTFS, Berlin SPARQL Benchmark, NPD
+FactPages, Bgee) are not redistributed here. They retain their
+respective upstream licences and must be obtained from the original
+distribution sites.

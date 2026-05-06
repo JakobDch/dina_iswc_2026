@@ -1,0 +1,16 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rev: <http://purl.org/stuff/rev#> .
+
+bsbm:Review dc:date xsd:string ;
+    bsbm:rating1 xsd:string ;
+    bsbm:rating2 xsd:string ;
+    bsbm:rating3 xsd:string ;
+    bsbm:rating4 xsd:string ;
+    bsbm:reviewDate xsd:string ;
+    rev:text xsd:string ;
+    dc:title xsd:string ;
+    bsbm:reviewFor bsbm:Product ;
+    rev:reviewer foaf:Person .

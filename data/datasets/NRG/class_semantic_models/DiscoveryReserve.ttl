@@ -1,0 +1,13 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:DiscoveryReserve eno:dateResourceEstimate xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateUpdated xsd:date ;
+    eno:recoverableCondensate xsd:decimal ;
+    eno:recoverableGas xsd:decimal ;
+    eno:recoverableNGL xsd:decimal ;
+    eno:recoverableOil xsd:decimal ;
+    eno:registryId xsd:integer ;
+    eno:reservesResourceClass xsd:string ;
+    eno:reservesForDiscovery eno:Discovery .

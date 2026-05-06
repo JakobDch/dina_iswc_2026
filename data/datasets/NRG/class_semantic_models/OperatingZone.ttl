@@ -1,0 +1,12 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:OperatingZone eno:dateApproved xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateUpdated xsd:date ;
+    eno:dateUpdatedMax xsd:date ;
+    eno:dateZoneValidFrom xsd:date ;
+    eno:dateZoneValidTo xsd:date ;
+    eno:designation xsd:string ;
+    eno:registryId xsd:integer ;
+    eno:zoneOperatorCompany eno:Company .

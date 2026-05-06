@@ -1,0 +1,13 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+
+bsbm:Offer dc:date xsd:string ;
+    bsbm:deliveryDays xsd:string ;
+    bsbm:offerWebpage xsd:string ;
+    bsbm:price xsd:string ;
+    bsbm:validFrom xsd:string ;
+    bsbm:validTo xsd:string ;
+    bsbm:product bsbm:Product ;
+    dc:publisher bsbm:Vendor ;
+    bsbm:vendor bsbm:Vendor .

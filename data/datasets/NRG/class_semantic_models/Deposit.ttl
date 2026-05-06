@@ -1,0 +1,15 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:Deposit eno:condition xsd:string ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateUpdated xsd:date ;
+    eno:dateUpdatedMax xsd:date ;
+    eno:designation xsd:string ;
+    eno:registryId xsd:integer ;
+    eno:activeDepositOperator eno:Company ;
+    eno:currentFieldOwner eno:ExtractionPermit ;
+    eno:discoveryWellbore eno:Borehole ;
+    eno:discoveryWellbore eno:PlatformBorehole ;
+    eno:discoveryWellbore eno:InitialWellbore ;
+    eno:discoveryWellbore eno:WildcatWellbore .

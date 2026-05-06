@@ -1,0 +1,194 @@
+# =============================================================================
+# Docker Compose for Experiment Setup (SMALL datasets only)
+# =============================================================================
+#
+# LARGE dataset variants were removed – mapping optimization will be a separate paper.
+#
+# Port mapping:
+#   - EDU-small:  8080
+#   - TRN-small:  8081
+#   - NRG-small:  8082
+#   - BSBM:       8083
+#   - LCA:        8085
+#
+# Usage:
+#   docker compose up -d
+# =============================================================================
+
+# ============================================================
+# YAML Anchors for shared OnTop configuration
+# ============================================================
+x-ontop-base: &ontop-base
+  build:
+    context: .
+    dockerfile: Dockerfile.ontop
+  restart: "no"  # Changed to prevent auto-start
+  healthcheck:
+    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
+    interval: 10s
+    timeout: 10s
+    retries: 30
+    start_period: 120s
+
+x-ontop-small: &ontop-small
+  <<: *ontop-base
+  deploy:
+    resources:
+      limits:
+        cpus: '2.0'
+        memory: 1G
+  environment: &env-small
+    JAVA_TOOL_OPTIONS: "-Xmx768m -Xms512m"
+    ONTOP_DEV_MODE: "true"
+
+services:
+  # ============================================================
+  # DATABASE - MySQL with experiment data
+  # ============================================================
+  mysql:
+    image: mysql:8.0
+    container_name: experiment_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: d1n4_exp_2026
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      # Load experiment SQL files directly (MySQL only reads files, not subdirs)
+      - ./data/sql/experiment/01_trn_small.sql:/docker-entrypoint-initdb.d/01_trn_small.sql
+      - ./data/sql/experiment/03_edu_small.sql:/docker-entrypoint-initdb.d/03_edu_small.sql
+      - ./data/sql/experiment/05_nrg_small.sql:/docker-entrypoint-initdb.d/05_nrg_small.sql
+      # Also load BSBM and LCA
+      - ./data/sql/07_bsbm_benchmark.sql:/docker-entrypoint-initdb.d/07_bsbm.sql
+      - ./data/sql/08_lca_schema.sql:/docker-entrypoint-initdb.d/08_lca_schema.sql
+      - ./data/sql/08b_lca_data.sql:/docker-entrypoint-initdb.d/08b_lca_data.sql
+      - mysql_experiment_data:/var/lib/mysql
+    command: >
+      --innodb-buffer-pool-size=4G
+      --innodb-buffer-pool-instances=4
+      --max-connections=200
+      --thread-cache-size=32
+      --join-buffer-size=8388608
+      --sort-buffer-size=8388608
+      --tmp-table-size=134217728
+      --max-heap-table-size=134217728
+      --wait-timeout=600
+      --net-read-timeout=120
+      --net-write-timeout=240
+      --table-open-cache=4000
+      --max-execution-time=300000
+      --innodb-flush-log-at-trx-commit=2
+      --innodb-log-buffer-size=64M
+      --max-allowed-packet=1G
+      --innodb-redo-log-capacity=2G
+    deploy:
+      resources:
+        limits:
+          cpus: '6.0'
+          memory: 8G
+    healthcheck:
+      test: ["CMD", "mysql", "-uroot", "-pd1n4_exp_2026", "-e", "SELECT 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 60
+      start_period: 300s
+
+  # ============================================================
+  # SMALL DATASET ENDPOINTS
+  # ============================================================
+
+  # EDU Small - Port 8080
+  ontop-edu-small:
+    <<: *ontop-small
+    container_name: ontop_edu_small
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./mappings/edu-small:/opt/ontop/input
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # TRN Small - Port 8081
+  ontop-trn-small:
+    <<: *ontop-small
+    container_name: ontop_trn_small
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./mappings/trn-small:/opt/ontop/input
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # NRG Small - Port 8082
+  ontop-nrg-small:
+    <<: *ontop-small
+    container_name: ontop_nrg_small
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./mappings/nrg-small:/opt/ontop/input
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # ============================================================
+  # UNCHANGED DATASETS
+  # ============================================================
+
+  # BSBM - Port 8083
+  ontop-bsbm:
+    <<: *ontop-small
+    container_name: ontop_bsbm
+    ports:
+      - "8083:8080"
+    volumes:
+      - ./mappings/bsbm:/opt/ontop/input
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # LCA - Port 8085
+  ontop-lca:
+    <<: *ontop-small
+    container_name: ontop_lca
+    ports:
+      - "8085:8080"
+    volumes:
+      - ./mappings/lca:/opt/ontop/input
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+volumes:
+  mysql_experiment_data:

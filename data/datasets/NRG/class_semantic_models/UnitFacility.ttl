@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+@prefix enoptl: <http://example.org/ontology/energy-ptl#> .
+
+enoptl:UnitFacility enoptl:dateLicenceValidFrom xsd:date ;
+    enoptl:dateLicenceValidTo xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    enoptl:dateUpdatedMax xsd:date ;
+    eno:designation xsd:string ;
+    eno:registryId xsd:integer ;
+    enoptl:UnitFacilityOperatorCompany eno:Company .

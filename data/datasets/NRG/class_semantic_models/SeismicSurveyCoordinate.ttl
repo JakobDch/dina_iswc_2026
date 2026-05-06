@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:SeismicSurveyCoordinate eno:dateSynchronized xsd:date ;
+    eno:degreesEW xsd:integer ;
+    eno:degreesNS xsd:integer ;
+    eno:minutesEW xsd:integer ;
+    eno:minutesNS xsd:integer ;
+    eno:polygonPointNo xsd:integer ;
+    eno:secondsEW xsd:decimal ;
+    eno:secondsNS xsd:decimal .

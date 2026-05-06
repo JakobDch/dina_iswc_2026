@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eduo: <http://example.org/ontology/education#> .
+
+eduo:Learner eduo:emailAddress xsd:string ;
+    eduo:label xsd:string ;
+    eduo:telephone xsd:string ;
+    eduo:belongsTo eduo:Division ;
+    eduo:enrolledIn eduo:Course ;
+    eduo:mentor eduo:Educator ;
+    eduo:tutorOf eduo:Course ;
+    eduo:undergraduateDegreeFrom eduo:Academy .

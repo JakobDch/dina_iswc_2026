@@ -1,0 +1,31 @@
+title = "Transport SPARQL Endpoint"
+
+[endpoint]
+address = "0.0.0.0:8080"
+
+[[tabGroups]]
+name = "Example Queries"
+
+[[tabGroups.tabs]]
+name = "All Stops"
+query = """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?stop ?name WHERE {
+    ?stop a tro:Stop .
+    ?stop foaf:name ?name .
+}
+LIMIT 10
+"""
+
+[[tabGroups.tabs]]
+name = "Routes"
+query = """
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?route ?shortName ?longName WHERE {
+    ?route a tro:Line .
+    ?route tro:abbreviation ?shortName .
+    OPTIONAL { ?route tro:fullTitle ?longName }
+}
+LIMIT 10
+"""

@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix schema1: <http://schema.org/> .
+@prefix tro: <http://example.org/ontology/transport#> .
+
+tro:Feed dcterms:language xsd:string ;
+    dcterms:publisher xsd:string ;
+    schema1:version xsd:string .

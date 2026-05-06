@@ -1,0 +1,12 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix oriont: <https://orienting.eu/oriont#> .
+@prefix oriont-ext: <https://orienting.eu/oriont-ext#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+owl:Thing oriont-ext:hasCFUnitLabel xsd:string ;
+    oriont-ext:hasCategoryPath xsd:string ;
+    rdfs:label xsd:string ;
+    oriont:assessesImpactCategory owl:Thing ;
+    oriont:hasIndicatorName owl:Thing ;
+    oriont:hasIndicatorUnit owl:Thing .

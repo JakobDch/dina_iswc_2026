@@ -1,0 +1,15 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:ExtractionPermit eno:currentAreaSize xsd:decimal ;
+    eno:currentStatus xsd:string ;
+    eno:dateLicenceGranted xsd:date ;
+    eno:dateLicenceValidTo xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateUpdated xsd:date ;
+    eno:dateUpdatedMax xsd:date ;
+    eno:designation xsd:string ;
+    eno:isActive xsd:string ;
+    eno:licensingActivityName xsd:string ;
+    eno:originalAreaSize xsd:decimal ;
+    eno:registryId xsd:integer .

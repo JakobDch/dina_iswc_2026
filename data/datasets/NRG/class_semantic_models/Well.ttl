@@ -1,0 +1,6 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:Well eno:dateSynchronized xsd:date ;
+    eno:designation xsd:string ;
+    eno:wellType xsd:string .

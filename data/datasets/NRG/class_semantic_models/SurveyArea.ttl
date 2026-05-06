@@ -1,0 +1,15 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:SurveyArea eno:areaSize3DKm2 xsd:decimal ;
+    eno:isMarketAvailable xsd:string ;
+    eno:isTurnAreaIncluded xsd:string ;
+    eno:lengthPlannedBoatKm xsd:integer ;
+    eno:lengthPlannedCdpKm xsd:integer ;
+    eno:sensorLength xsd:string ;
+    eno:sensorNumbers xsd:string ;
+    eno:sensorType xsd:string ;
+    eno:sourceNumber xsd:string ;
+    eno:sourcePressure xsd:string ;
+    eno:sourceSize xsd:string ;
+    eno:sourceType xsd:string .

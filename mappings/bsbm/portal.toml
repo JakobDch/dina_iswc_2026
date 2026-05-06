@@ -1,0 +1,31 @@
+title = "BSBM SPARQL Endpoint"
+
+[endpoint]
+address = "0.0.0.0:8080"
+
+[[tabGroups]]
+name = "Example Queries"
+
+[[tabGroups.tabs]]
+name = "Products"
+query = """
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?product ?label WHERE {
+    ?product a bsbm:Product .
+    ?product rdfs:label ?label .
+}
+LIMIT 10
+"""
+
+[[tabGroups.tabs]]
+name = "Offers"
+query = """
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+SELECT ?offer ?price ?vendor WHERE {
+    ?offer a bsbm:Offer .
+    ?offer bsbm:price ?price .
+    ?offer bsbm:vendor ?vendor .
+}
+LIMIT 10
+"""

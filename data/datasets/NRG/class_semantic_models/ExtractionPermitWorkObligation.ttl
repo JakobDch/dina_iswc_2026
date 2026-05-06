@@ -1,0 +1,10 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:ExtractionPermitWorkObligation eno:condition xsd:string ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateTaskExpiry xsd:date ;
+    eno:dateUpdated xsd:date ;
+    eno:designation xsd:string ;
+    eno:taskID xsd:integer ;
+    eno:taskType xsd:string .

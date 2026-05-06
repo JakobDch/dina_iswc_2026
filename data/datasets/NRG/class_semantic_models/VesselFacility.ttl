@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:VesselFacility eno:dateSynchronized xsd:date ;
+    eno:designation xsd:string ;
+    eno:facilityFunction xsd:string ;
+    eno:facilityType xsd:string ;
+    eno:registryId xsd:integer .

@@ -1,0 +1,5 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix tro: <http://example.org/ontology/transport#> .
+
+tro:Service tro:serviceRule tro:CalendarRule ;
+    tro:serviceRule tro:CalendarDateRule .

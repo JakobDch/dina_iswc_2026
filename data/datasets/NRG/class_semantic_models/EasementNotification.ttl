@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+@prefix enoptl: <http://example.org/ontology/energy-ptl#> .
+
+enoptl:EasementNotification enoptl:dateMessageRegistered xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    enoptl:dateUpdated xsd:date ;
+    enoptl:messageNo xsd:integer ;
+    enoptl:messageType xsd:string ;
+    eno:messageForLicence eno:ExtractionPermit ;
+    enoptl:messageForTUF enoptl:UnitFacility .

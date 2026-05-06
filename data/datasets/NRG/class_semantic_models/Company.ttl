@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:Company eno:dateSynchronized xsd:date ;
+    eno:designation xsd:string ;
+    eno:isCurrentLicenceLicensee xsd:string ;
+    eno:isCurrentLicenceOperator xsd:string ;
+    eno:isFormerLicenceLicensee xsd:string ;
+    eno:isFormerLicenceOperator xsd:string ;
+    eno:registryId xsd:integer ;
+    eno:shortName xsd:string .

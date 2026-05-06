@@ -1,0 +1,29 @@
+title = "Energy SPARQL Endpoint"
+
+[endpoint]
+address = "0.0.0.0:8080"
+
+[[tabGroups]]
+name = "Example Queries"
+
+[[tabGroups.tabs]]
+name = "All Wellbores"
+query = """
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT ?wellbore ?name WHERE {
+    ?wellbore a eno:Borehole .
+    ?wellbore eno:designation ?name .
+}
+LIMIT 10
+"""
+
+[[tabGroups.tabs]]
+name = "Fields"
+query = """
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT ?field ?name WHERE {
+    ?field a eno:Deposit .
+    ?field eno:designation ?name .
+}
+LIMIT 10
+"""

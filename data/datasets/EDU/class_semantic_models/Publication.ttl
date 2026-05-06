@@ -1,0 +1,9 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eduo: <http://example.org/ontology/education#> .
+
+eduo:Publication eduo:abstract xsd:string ;
+    eduo:label xsd:string ;
+    eduo:title xsd:string ;
+    eduo:author eduo:DoctoralCandidate ;
+    eduo:author eduo:SeniorScholar ;
+    eduo:author eduo:Tutor .

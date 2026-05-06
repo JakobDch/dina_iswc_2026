@@ -1,0 +1,6 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix tro: <http://example.org/ontology/transport#> .
+
+tro:CalendarDateRule dcterms:date xsd:date ;
+    tro:dateAddition xsd:boolean .

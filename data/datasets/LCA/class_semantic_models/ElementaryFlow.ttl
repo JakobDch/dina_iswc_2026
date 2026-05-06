@@ -1,0 +1,14 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix oriont: <https://orienting.eu/oriont#> .
+@prefix oriont-ext: <https://orienting.eu/oriont-ext#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+oriont:ElementaryFlow oriont-ext:hasFlowName xsd:string ;
+    oriont-ext:hasMeasureUnit xsd:string ;
+    oriont-ext:hasMeasureValue xsd:decimal ;
+    rdfs:label xsd:string ;
+    oriont:hasEFCategorisation oriont:EFCategorisation ;
+    oriont:hasFlowClassification oriont:FlowClassification ;
+    oriont:hasObjectType oriont:FlowObject ;
+    oriont:isInputOf oriont:Activity ;
+    oriont:isOutputOf oriont:Activity .

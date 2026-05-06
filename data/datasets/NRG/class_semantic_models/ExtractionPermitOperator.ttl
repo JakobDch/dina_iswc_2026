@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:ExtractionPermitOperator eno:dateOperatorValidFrom xsd:date ;
+    eno:dateOperatorValidTo xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:licenceOperatorCompany eno:Company ;
+    eno:operatorForLicence eno:ExtractionPermit .

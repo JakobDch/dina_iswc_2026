@@ -1,0 +1,101 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix oriont: <https://orienting.eu/oriont#> .
+@prefix oriont-ext: <https://orienting.eu/oriont-ext#> .
+
+# =============================================================================
+# ORIONT Ontology Extension - Neue Datatype Properties
+# =============================================================================
+# Namespace: https://orienting.eu/oriont-ext#
+# Prefix: oriont-ext
+#
+# These properties extend the ORIONT ontology with additional datatype
+# properties for LCA data modelling.
+# =============================================================================
+
+<https://orienting.eu/oriont-ext>
+    a owl:Ontology ;
+    rdfs:label "ORIONT Extension"@en ;
+    rdfs:comment "Extension of the ORIONT ontology with additional datatype properties for LCA data modeling."@en ;
+    owl:imports <https://orienting.eu/oriont> .
+
+# -----------------------------------------------------------------------------
+# Flow Properties
+# -----------------------------------------------------------------------------
+
+oriont-ext:hasFlowName a owl:DatatypeProperty ;
+    rdfs:domain oriont:Flow ;
+    rdfs:range xsd:string ;
+    rdfs:label "has flow name"@en ;
+    rdfs:label "hat Flow-Name"@de ;
+    rdfs:comment "Name or label of the flow (material, energy, emission). Extension property."@en .
+
+oriont-ext:hasMeasureValue a owl:DatatypeProperty ;
+    rdfs:domain oriont:Flow ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "has measure value"@en ;
+    rdfs:label "hat Mengenwert"@de ;
+    rdfs:comment "Quantitative measure value of the flow exchange. Extension property."@en .
+
+oriont-ext:hasMeasureUnit a owl:DatatypeProperty ;
+    rdfs:domain oriont:Flow ;
+    rdfs:range xsd:string ;
+    rdfs:label "has measure unit"@en ;
+    rdfs:label "hat Mengeneinheit"@de ;
+    rdfs:comment "Unit of the flow measure (e.g., kg, MJ, m3). Extension property."@en .
+
+# -----------------------------------------------------------------------------
+# Activity Properties
+# -----------------------------------------------------------------------------
+
+oriont-ext:hasActivityName a owl:DatatypeProperty ;
+    rdfs:domain oriont:Activity ;
+    rdfs:range xsd:string ;
+    rdfs:label "has activity name"@en ;
+    rdfs:label "hat Aktivitätsname"@de ;
+    rdfs:comment "Name or label of the activity or process. Extension property."@en .
+
+# -----------------------------------------------------------------------------
+# Characterisation Factor Properties
+# -----------------------------------------------------------------------------
+
+oriont-ext:hasCFValue a owl:DatatypeProperty ;
+    rdfs:domain oriont:CF ;
+    rdfs:range xsd:decimal ;
+    rdfs:label "has CF value"@en ;
+    rdfs:label "hat CF-Wert"@de ;
+    rdfs:comment "Numeric value of the characterisation factor. Extension property."@en .
+
+oriont-ext:hasCFUnitLabel a owl:DatatypeProperty ;
+    rdfs:domain oriont:CFUnit ;
+    rdfs:range xsd:string ;
+    rdfs:label "has CF unit label"@en ;
+    rdfs:label "hat CF-Einheitslabel"@de ;
+    rdfs:comment "Label for the characterisation factor unit (e.g., kg CO2 eq/kg). Extension property."@en .
+
+# -----------------------------------------------------------------------------
+# Classification Properties
+# -----------------------------------------------------------------------------
+
+oriont-ext:hasCategoryPath a owl:DatatypeProperty ;
+    rdfs:domain [
+        a owl:Class ;
+        owl:unionOf ( oriont:EFCategorisation oriont:FlowClassification )
+    ] ;
+    rdfs:range xsd:string ;
+    rdfs:label "has category path"@en ;
+    rdfs:label "hat Kategoriepfad"@de ;
+    rdfs:comment "Hierarchical category path string. Extension property."@en .
+
+# -----------------------------------------------------------------------------
+# FlowObject Properties
+# -----------------------------------------------------------------------------
+
+oriont-ext:hasFlowObjectName a owl:DatatypeProperty ;
+    rdfs:domain oriont:FlowObject ;
+    rdfs:range xsd:string ;
+    rdfs:label "has flow object name"@en ;
+    rdfs:label "hat FlowObject-Name"@de ;
+    rdfs:comment "Name of the flow object. Extension property."@en .

@@ -1,0 +1,349 @@
+# Slot-based OnTop containers with per-slot mapping isolation (SMALL datasets only)
+# 5 slots x 5 containers = 25 containers
+# Ports: Slot0=8100-8105, Slot1=8200-8205, Slot2=8300-8305, Slot3=8400-8405, Slot4=8500-8505
+# (port index 4 is skipped – previously used for BGEE which is not part of the experiment)
+#
+# Container naming convention (must match code in mapping_optimizer_tools.py):
+#   Small:   ontop_{dataset}_small_slot{N}  (edu, trn, nrg)
+#   Unsized: ontop_{dataset}_slot{N}        (bsbm, lca)
+#
+# LARGE containers were removed (mapping optimization moved to a separate paper).
+# BGEE was removed (not part of the experimental corpus, database not provisioned).
+#
+# Each slot mounts from mappings-slots/slot{N}/{dataset}/ for mapping isolation.
+# Initialize with: python scripts/initialize_slot_mappings.py --slots 5 --clean
+
+x-ontop-base: &ontop-base
+  build:
+    context: .
+    dockerfile: Dockerfile.ontop
+  restart: "no"
+  healthcheck:
+    test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
+    interval: 10s
+    timeout: 10s
+    retries: 30
+    start_period: 120s
+  networks:
+    - experiment_network
+
+x-ontop-small: &ontop-small
+  <<: *ontop-base
+  deploy:
+    resources:
+      limits:
+        cpus: "2.0"
+        memory: 1G
+  environment: &env-small
+    JAVA_TOOL_OPTIONS: "-Xmx768m -Xms512m"
+
+services:
+  # ========== SLOT 0 (8100-8105) ==========
+  ontop-edu-small-slot0:
+    <<: *ontop-small
+    container_name: ontop_edu_small_slot0
+    ports: ["8100:8080"]
+    volumes: ["./mappings-slots/slot0/edu-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-trn-small-slot0:
+    <<: *ontop-small
+    container_name: ontop_trn_small_slot0
+    ports: ["8101:8080"]
+    volumes: ["./mappings-slots/slot0/trn-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-nrg-small-slot0:
+    <<: *ontop-small
+    container_name: ontop_nrg_small_slot0
+    ports: ["8102:8080"]
+    volumes: ["./mappings-slots/slot0/nrg-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-bsbm-slot0:
+    <<: *ontop-small
+    container_name: ontop_bsbm_slot0
+    ports: ["8103:8080"]
+    volumes: ["./mappings-slots/slot0/bsbm:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-lca-slot0:
+    <<: *ontop-small
+    container_name: ontop_lca_slot0
+    ports: ["8105:8080"]
+    volumes: ["./mappings-slots/slot0/lca:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # ========== SLOT 1 (8200-8205) ==========
+  ontop-edu-small-slot1:
+    <<: *ontop-small
+    container_name: ontop_edu_small_slot1
+    ports: ["8200:8080"]
+    volumes: ["./mappings-slots/slot1/edu-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-trn-small-slot1:
+    <<: *ontop-small
+    container_name: ontop_trn_small_slot1
+    ports: ["8201:8080"]
+    volumes: ["./mappings-slots/slot1/trn-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-nrg-small-slot1:
+    <<: *ontop-small
+    container_name: ontop_nrg_small_slot1
+    ports: ["8202:8080"]
+    volumes: ["./mappings-slots/slot1/nrg-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-bsbm-slot1:
+    <<: *ontop-small
+    container_name: ontop_bsbm_slot1
+    ports: ["8203:8080"]
+    volumes: ["./mappings-slots/slot1/bsbm:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-lca-slot1:
+    <<: *ontop-small
+    container_name: ontop_lca_slot1
+    ports: ["8205:8080"]
+    volumes: ["./mappings-slots/slot1/lca:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # ========== SLOT 2 (8300-8305) ==========
+  ontop-edu-small-slot2:
+    <<: *ontop-small
+    container_name: ontop_edu_small_slot2
+    ports: ["8300:8080"]
+    volumes: ["./mappings-slots/slot2/edu-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-trn-small-slot2:
+    <<: *ontop-small
+    container_name: ontop_trn_small_slot2
+    ports: ["8301:8080"]
+    volumes: ["./mappings-slots/slot2/trn-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-nrg-small-slot2:
+    <<: *ontop-small
+    container_name: ontop_nrg_small_slot2
+    ports: ["8302:8080"]
+    volumes: ["./mappings-slots/slot2/nrg-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-bsbm-slot2:
+    <<: *ontop-small
+    container_name: ontop_bsbm_slot2
+    ports: ["8303:8080"]
+    volumes: ["./mappings-slots/slot2/bsbm:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-lca-slot2:
+    <<: *ontop-small
+    container_name: ontop_lca_slot2
+    ports: ["8305:8080"]
+    volumes: ["./mappings-slots/slot2/lca:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # ========== SLOT 3 (8400-8405) ==========
+  ontop-edu-small-slot3:
+    <<: *ontop-small
+    container_name: ontop_edu_small_slot3
+    ports: ["8400:8080"]
+    volumes: ["./mappings-slots/slot3/edu-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-trn-small-slot3:
+    <<: *ontop-small
+    container_name: ontop_trn_small_slot3
+    ports: ["8401:8080"]
+    volumes: ["./mappings-slots/slot3/trn-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-nrg-small-slot3:
+    <<: *ontop-small
+    container_name: ontop_nrg_small_slot3
+    ports: ["8402:8080"]
+    volumes: ["./mappings-slots/slot3/nrg-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-bsbm-slot3:
+    <<: *ontop-small
+    container_name: ontop_bsbm_slot3
+    ports: ["8403:8080"]
+    volumes: ["./mappings-slots/slot3/bsbm:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-lca-slot3:
+    <<: *ontop-small
+    container_name: ontop_lca_slot3
+    ports: ["8405:8080"]
+    volumes: ["./mappings-slots/slot3/lca:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # ========== SLOT 4 (8500-8505) ==========
+  ontop-edu-small-slot4:
+    <<: *ontop-small
+    container_name: ontop_edu_small_slot4
+    ports: ["8500:8080"]
+    volumes: ["./mappings-slots/slot4/edu-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-trn-small-slot4:
+    <<: *ontop-small
+    container_name: ontop_trn_small_slot4
+    ports: ["8501:8080"]
+    volumes: ["./mappings-slots/slot4/trn-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-nrg-small-slot4:
+    <<: *ontop-small
+    container_name: ontop_nrg_small_slot4
+    ports: ["8502:8080"]
+    volumes: ["./mappings-slots/slot4/nrg-small:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-bsbm-slot4:
+    <<: *ontop-small
+    container_name: ontop_bsbm_slot4
+    ports: ["8503:8080"]
+    volumes: ["./mappings-slots/slot4/bsbm:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  ontop-lca-slot4:
+    <<: *ontop-small
+    container_name: ontop_lca_slot4
+    ports: ["8505:8080"]
+    volumes: ["./mappings-slots/slot4/lca:/opt/ontop/input"]
+    environment:
+      <<: *env-small
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+networks:
+  experiment_network:
+    external: true
+    name: experiment_default

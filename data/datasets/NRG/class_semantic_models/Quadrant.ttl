@@ -1,0 +1,5 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:Quadrant eno:dateSynchronized xsd:date ;
+    eno:designation xsd:string .

@@ -1,0 +1,14 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:OperatingZoneArea eno:areaSize xsd:decimal ;
+    eno:dateBaaAreaValidFrom xsd:date ;
+    eno:dateBaaAreaValidTo xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:isActive xsd:string ;
+    eno:polygonNo xsd:integer ;
+    eno:registryId xsd:integer ;
+    eno:isGeometryOfFeature eno:UnitizedZone ;
+    eno:isGeometryOfFeature eno:OperatingZone ;
+    eno:isGeometryOfFeature eno:ParcellZone ;
+    eno:isGeometryOfFeature eno:SlidingScaleZone .

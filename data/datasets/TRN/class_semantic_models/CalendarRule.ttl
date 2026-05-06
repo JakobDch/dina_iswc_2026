@@ -1,0 +1,13 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix schema1: <http://schema.org/> .
+@prefix tro: <http://example.org/ontology/transport#> .
+
+tro:CalendarRule schema1:endDate xsd:date ;
+    tro:friday xsd:boolean ;
+    tro:monday xsd:boolean ;
+    tro:saturday xsd:boolean ;
+    schema1:startDate xsd:date ;
+    tro:sunday xsd:boolean ;
+    tro:thursday xsd:boolean ;
+    tro:tuesday xsd:boolean ;
+    tro:wednesday xsd:boolean .

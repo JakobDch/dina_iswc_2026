@@ -1,0 +1,17 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:RegularSeismicSurvey eno:areaSize3DKm2 xsd:decimal ;
+    eno:currentStatus xsd:string ;
+    eno:dateSurveyActualCompleted xsd:date ;
+    eno:dateSurveyActualStart xsd:date ;
+    eno:dateSurveyPlannedCompleted xsd:date ;
+    eno:dateSurveyPlannedStart xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:designation xsd:string ;
+    eno:lengthBoatTotalKm xsd:integer ;
+    eno:lengthCdpTotalKm xsd:integer ;
+    eno:registryId xsd:integer ;
+    eno:surveySubType xsd:string ;
+    eno:surveyType xsd:string ;
+    eno:reportingCompany eno:Company .

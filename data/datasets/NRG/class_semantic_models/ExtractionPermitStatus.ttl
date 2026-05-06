@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:ExtractionPermitStatus eno:condition xsd:string ;
+    eno:dateInitialStatusTo xsd:date ;
+    eno:dateLicenceValidTo xsd:date ;
+    eno:dateStatusValidFrom xsd:date ;
+    eno:dateStatusValidTo xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateUpdated xsd:date ;
+    eno:statusForLicence eno:ExtractionPermit .

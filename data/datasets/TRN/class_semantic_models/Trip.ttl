@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix tro: <http://example.org/ontology/transport#> .
+
+tro:Trip tro:abbreviation xsd:string ;
+    tro:destination xsd:string ;
+    tro:direction xsd:string ;
+    tro:line tro:Line ;
+    tro:service tro:Service .

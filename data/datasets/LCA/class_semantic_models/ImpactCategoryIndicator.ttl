@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix oriont: <https://orienting.eu/oriont#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+oriont:ImpactCategoryIndicator rdfs:label xsd:string ;
+    oriont:assessesImpactCategory oriont:ImpactCategory ;
+    oriont:hasIndicatorName oriont:IndicatorName ;
+    oriont:hasIndicatorUnit oriont:IndicatorUnit .

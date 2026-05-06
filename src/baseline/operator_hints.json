@@ -1,0 +1,74 @@
+[
+  {
+    "id": "NESTED-SUBQUERIES",
+    "trigger_patterns": ["SELECT[\\s\\S]+WHERE[\\s\\S]+\\{[\\s\\S]+SELECT[\\s\\S]+WHERE"],
+    "structural_hint": "Query contains nested SELECT subqueries which are beyond the scope of pattern-level analysis.",
+    "instruction": "This query uses nested SELECT statements (subqueries). Pattern decomposition cannot analyze such complex structures. If the query returns empty results: (1) Test each subquery independently to verify it returns data, (2) Check that join variables between subqueries have matching values, (3) Verify aggregations (GROUP BY/HAVING) don't eliminate all results, (4) Consider simplifying by removing subquery nesting if possible."
+  },
+  {
+    "id": "OP-FILTER-UNBOUND-UNION",
+    "trigger_patterns": ["\\bUNION\\b[\\s\\S]*FILTER\\s*\\(", "FILTER\\s*\\([\\s\\S]*\\bUNION\\b"],
+    "structural_hint": "A global FILTER references variables not bound in all UNION branches.",
+    "instruction": "If a global FILTER uses a variable that is unbound in any UNION branch, move that FILTER into the compatible branch(es) or ensure the variable is bound before the FILTER. No FILTER variable may remain unbound in any branch."
+  },
+  {
+    "id": "OP-OPTIONAL-GLOBAL-FILTER",
+    "trigger_patterns": ["\\bOPTIONAL\\b[\\s\\S]*\\}[\\s\\S]*FILTER\\s*\\(", "FILTER\\s*\\([\\s\\S]*\\bOPTIONAL\\b[\\s\\S]*\\}"],
+    "structural_hint": "A FILTER references a variable that is bound only inside OPTIONAL.",
+    "instruction": "Place the FILTER on OPTIONAL variables inside the same OPTIONAL block, or use COALESCE/BIND so the variable is always bound when evaluated globally."
+  },
+  {
+    "id": "OP-REGEX-FLAGS",
+    "trigger_patterns": ["REGEX\\s*\\("],
+    "structural_hint": "Case-sensitive regex without flags may miss matches.",
+    "instruction": "Add regex flags (e.g., \"i\" for case-insensitive, optionally \"u\"), or use LCASE/CONTAINS if sufficient."
+  },
+  {
+    "id": "JOIN-NAME-VS-ID",
+    "trigger_patterns": ["\\b:name\\b", "\\?\\w+\\s+:name\\s+\\?n[\\s.;]", "\\?\\w+\\s+:id\\w*\\s+\\?id"],
+    "structural_hint": "Joins rely on names instead of stable IDs.",
+    "instruction": "Prefer joins on stable identifiers (e.g., :idNPD). Replace name-based joins with ID-based joins when available to avoid zero overlap from name variations."
+  },
+  {
+    "id": "UNION-SPLIT-JOINS",
+    "trigger_patterns": ["\\bUNION\\b"],
+    "structural_hint": "Common join patterns are split across UNION branches.",
+    "instruction": "Pull shared joins/patterns outside the UNION. Use UNION only for true type alternatives; projected variables should be compatibly bound in all branches."
+  },
+  {
+    "id": "MINUS-VS-NOT-EXISTS",
+    "trigger_patterns": ["\\bMINUS\\b"],
+    "structural_hint": "MINUS removes rows too aggressively when variables overlap.",
+    "instruction": "Prefer FILTER NOT EXISTS when you intend an anti-join on the absence of a pattern without excessive row elimination."
+  },
+  {
+    "id": "VALUES-TYPE-MISMATCH",
+    "trigger_patterns": ["\\bVALUES\\b"],
+    "structural_hint": "VALUES provides strings while data uses typed literals.",
+    "instruction": "Use typed literals in VALUES (e.g., 2008 instead of \"2008\", or \"2008\"^^xsd:integer) or cast during comparison to avoid type mismatch."
+  },
+  {
+    "id": "LANG-MATCH",
+    "trigger_patterns": ["\\brdfs:label\\b", "\\blabel\\b", "LANG\\s*\\(", "LANGMATCHES\\s*\\("],
+    "structural_hint": "String equality on language-tagged labels may fail.",
+    "instruction": "Use LANGMATCHES(LANG(?label), \"…\") and compare LCASE(STR(?label)) to the target text to account for language tags."
+  },
+  {
+    "id": "UOM-LITERAL-PADDING",
+    "trigger_patterns": ["coreIntervalUOM", "\"\\[?\\w+\\s*\\]?\""],
+    "structural_hint": "Exact unit literals include brackets/spaces (e.g., \"[m   ]\").",
+    "instruction": "Normalize units before comparison (e.g., via STRREPLACE/REPLACE) or use a VALUES list covering the observed variants like \"[m   ]\" vs \"[m]\"."
+  },
+  {
+    "id": "PLASMA-STRING-MATCHING",
+    "trigger_patterns": ["CONTAINS\\s*\\(", "LCASE\\s*\\("],
+    "structural_hint": "String matching may operate on entity URIs instead of literal values (domain-specific).",
+    "instruction": "For string operations, ensure you extract literal values first with plasma:hasValue: ?entity plasma:hasValue ?rawValue . Then use LCASE/CONTAINS on ?rawValue."
+  },
+  {
+    "id": "PROPERTY-NOT-FOUND",
+    "trigger_patterns": ["eno:member", "eno:part"],
+    "structural_hint": "Query uses properties that may not exist in the actual data (domain-specific).",
+    "instruction": "If a pattern returns zero results, verify the property actually exists in the data. The semantic model may contain theoretical properties not present in instances. Check STEP 4 sample data to see which properties are actually available."
+  }
+]

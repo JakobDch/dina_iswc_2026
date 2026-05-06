@@ -1,0 +1,10 @@
+FROM ontop/ontop:5.4.0
+
+# Download MySQL and PostgreSQL JDBC drivers
+USER root
+RUN mkdir -p /opt/ontop/jdbc && \
+    wget --no-check-certificate -O /opt/ontop/jdbc/mysql-connector-j-8.0.33.jar \
+    https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar && \
+    wget --no-check-certificate -O /opt/ontop/jdbc/postgresql-42.7.1.jar \
+    https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.1/postgresql-42.7.1.jar
+USER ontop

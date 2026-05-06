@@ -1,0 +1,1958 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="https://orienting.eu/oriont#"
+     xml:base="https://orienting.eu/oriont"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:oriont="https://orienting.eu/oriont#">
+    <owl:Ontology rdf:about="https://orienting.eu/oriont">
+        <!-- owl:imports removed - external URI not available -->
+        <rdfs:comment>The ORIONT ontology was developed within the ORIENTING project (https://orienting.eu/), which integrates different life cycle sustainability topics into a single life cycle sustainability assessment (LCSA) methodology. The main role of ORIONT within ORIENTING was the content explication in order to align data structure and conceptually integrate data across sustainability topics. This was mainly achieved by an ontology visualisation, which was discussed with topic experts within the project, and is described in project deliverable D3.1 (https://cordis.europa.eu/project/id/958231/results). ORIONT builds on the BONSAI ontology (BONT, Ghose et al., 2021) and is aligned with the ORIENTING methodology. This technical implementation of ORIONT should be considered a draft suggestion as technical details might still be missing, and the ontology would need to be tested in applications.
+Ghose, A., Lissandrini, M., Hansen, E. R., &amp; Weidema, B. P. (2021). A core ontology for modeling life cycle sustainability assessment on the Semantic Web. Journal of Industrial Ecology, 1–17. https://doi.org/10.1111/jiec.13220</rdfs:comment>
+        <rdfs:label>ORIENTING LCSA ontology</rdfs:label>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- https://orienting.eu/oriont#affectsStakeholder -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#affectsStakeholder">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#ImpactCategory"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Stakeholder"/>
+        <rdfs:comment xml:lang="en">Specifies the stakeholder that is affected by an impact category/social topic</rdfs:comment>
+        <rdfs:label xml:lang="en">affects stakeholder</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#assessesImpactCategory -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#assessesImpactCategory">
+        <owl:inverseOf rdf:resource="https://orienting.eu/oriont#isAssessedByIndicator"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#ImpactCategoryIndicator"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#ImpactCategory"/>
+        <rdfs:comment xml:lang="en">Specifies the impact category that is assessed by an impact category indicator</rdfs:comment>
+        <rdfs:label xml:lang="en">assesses impact category</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#assessesTopic -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#assessesTopic">
+        <owl:inverseOf rdf:resource="https://orienting.eu/oriont#isAssessedByMethod"/>
+        <owl:inverseOf rdf:resource="https://orienting.eu/oriont#isAssessedByMethodology"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Methodology"/>
+        <rdfs:comment xml:lang="en">Specifies the sustainability topic that is assessed by a method or methodology</rdfs:comment>
+        <rdfs:label xml:lang="en">assesses sustainability topic</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#behavesTowards -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#behavesTowards">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Agent"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#ImpactCategory"/>
+        <rdfs:comment xml:lang="en">Specifies the social topic/impact category towards which an agent behaves</rdfs:comment>
+        <rdfs:label xml:lang="en">behaves towards</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#belongsToSector -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#belongsToSector">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Sector"/>
+        <rdfs:comment xml:lang="en">Specifies the sector to which an activity of flow belongs</rdfs:comment>
+        <rdfs:label xml:lang="en">belongs to sector</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#calculates -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#calculates">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#CharacterisationModel"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#CF"/>
+        <rdfs:comment xml:lang="en">Specifies the characterisation factor that is calculated by a characterisation model</rdfs:comment>
+        <rdfs:label xml:lang="en">calculates</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#containsMethod -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#containsMethod">
+        <owl:inverseOf rdf:resource="https://orienting.eu/oriont#isUsedByLCSAMethodology"/>
+        <owl:inverseOf rdf:resource="https://orienting.eu/oriont#isUsedByMethodology"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#LCSAMethodology"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Methodology"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Method"/>
+        <rdfs:comment xml:lang="en">Specifies the methods contained in a methodology</rdfs:comment>
+        <rdfs:label xml:lang="en">contains method</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#containsMethodology -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#containsMethodology">
+        <owl:inverseOf rdf:resource="https://orienting.eu/oriont#isUsedByLCSAMethodology"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#LCSAMethodology"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Methodology"/>
+        <rdfs:comment xml:lang="en">Specifies the methodologies contained in an LCSA methodology</rdfs:comment>
+        <rdfs:label xml:lang="en">contains methodology</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasActivityType -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasActivityType">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#ActivityType"/>
+        <rdfs:comment xml:lang="en">Specifies the type of the Activity</rdfs:comment>
+        <rdfs:label xml:lang="en">has activity type</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasBalanceableProperty -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasBalanceableProperty">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#BalanceableProperty"/>
+        <rdfs:comment xml:lang="en">Specifies the Measure of a Flow when this Measure is a BalanceableProperty, that is, when it follows a conservation law</rdfs:comment>
+        <rdfs:label xml:lang="en">has balanceable property</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasCFUnit -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasCFUnit">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#CF"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#CFUnit"/>
+        <rdfs:comment xml:lang="en">Specifies the unit of a characterisation factor</rdfs:comment>
+        <rdfs:label xml:lang="en">has characterisation factor unit</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasDeterminingFlow -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasDeterminingFlow">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:comment xml:lang="en">Specifies a flow object produced or consumed by an activity for which a change in demand or supply will affect the activity level (such as its production volume or extent)</rdfs:comment>
+        <rdfs:label xml:lang="en">has determining flow</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasEFCategories -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasEFCategories">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#EFCategorisation"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#EFCategories"/>
+        <rdfs:comment xml:lang="en">Specifies the categories of an elementary flow categorisation system</rdfs:comment>
+        <rdfs:label xml:lang="en">has elementary flow categories</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasEFCategorisation -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasEFCategorisation">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#EFCategorisation"/>
+        <rdfs:comment xml:lang="en">Specifies the categorisation of an elementary flow</rdfs:comment>
+        <rdfs:label xml:lang="en">has elementary flow categorisation</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasFlowClasses -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasFlowClasses">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#FlowClassification"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#FlowClasses"/>
+        <rdfs:comment xml:lang="en">Specifies the classes of a flow classification</rdfs:comment>
+        <rdfs:label xml:lang="en">has flow classes</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasFlowClassification -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasFlowClassification">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#FlowClassification"/>
+        <rdfs:comment xml:lang="en">Specifies the classification of a product, waste, or other flow</rdfs:comment>
+        <rdfs:label xml:lang="en">has flow classification</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasFlowDirection -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasFlowDirection">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:comment xml:lang="en">Specifies the direction of a flow (input or output)</rdfs:comment>
+        <rdfs:label xml:lang="en">has flow direction</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasImpactCategoryName -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasImpactCategoryName">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#ImpactCategory"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:comment xml:lang="en">Specifies the name of an impact category</rdfs:comment>
+        <rdfs:label xml:lang="en">has impact category name</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasIndicatorName -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasIndicatorName">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#ImpactCategoryIndicator"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:comment xml:lang="en">Specifies the name of an impact category indicator</rdfs:comment>
+        <rdfs:label xml:lang="en">has indicator name</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasIndicatorUnit -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasIndicatorUnit">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#ImpactCategoryIndicator"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:comment xml:lang="en">Specifies the unit of an impact category indicator</rdfs:comment>
+        <rdfs:label xml:lang="en">has impact category indicator unit</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasLCIAResult -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasLCIAResult">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#LCIAResult"/>
+        <rdfs:comment xml:lang="en">Specifies the life cycle impact assessment results of an activity</rdfs:comment>
+        <rdfs:label xml:lang="en">has life cycle impact assessment result</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasLCSAMethodologyName -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasLCSAMethodologyName">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#LCSAMethodology"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#LCSAMethodologyName"/>
+        <rdfs:comment xml:lang="en">Specifies the name of an LCSA methodology</rdfs:comment>
+        <rdfs:label xml:lang="en">has LCSA methodology name</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasLCStage -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasLCStage">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#LCStage"/>
+        <rdfs:comment xml:lang="en">Specifies the life cycle stage to which an activity belongs</rdfs:comment>
+        <rdfs:label xml:lang="en">has life cycle stage</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasLocation -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasLocation">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Agent"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#CF"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Location"/>
+        <rdfs:comment xml:lang="en">Specifies the location of an Activity, Agent, Flow or Characterization Factor (CF)</rdfs:comment>
+        <rdfs:label xml:lang="en">has location</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasMethodName -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasMethodName">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Method"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#MethodName"/>
+        <rdfs:comment xml:lang="en">Specifies the name of a method</rdfs:comment>
+        <rdfs:label xml:lang="en">has method name</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasMethodologyName -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasMethodologyName">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Methodology"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#MethodologyName"/>
+        <rdfs:comment xml:lang="en">Specifies the name of a methodology</rdfs:comment>
+        <rdfs:label xml:lang="en">has methodology name</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasObjectType -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasObjectType">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#FlowObject"/>
+        <rdfs:comment xml:lang="en">Specifies the Flow Object consumed or produced</rdfs:comment>
+        <rdfs:label xml:lang="en">has object type</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasOtherProperty -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasOtherProperty">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#OtherProperty"/>
+        <rdfs:comment xml:lang="en">Specifies the Measure of a Flow when this Measure is a UnBalanceableProperty, that is, when it follows a conservation law</rdfs:comment>
+        <rdfs:label xml:lang="en">has other property</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasOtherPropertyType -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasOtherPropertyType">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#OtherProperty"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#OtherPropertyType"/>
+        <rdfs:comment xml:lang="en">Specifies the dimension (Quantity) of a Measure that is classified as a UnBalanceableProperty</rdfs:comment>
+        <rdfs:label xml:lang="en">has other property type</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasPropertyType -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasPropertyType">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#BalanceableProperty"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#BalanceablePropertyType"/>
+        <rdfs:comment xml:lang="en">Specifies the dimension (Quantity) of a Measure that is classified as a BalanceableProperty</rdfs:comment>
+        <rdfs:label xml:lang="en">has property type</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasReferenceFlow -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasReferenceFlow">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#CF"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#ElementaryFlow"/>
+        <rdfs:comment xml:lang="en">Specifies the reference flow of a characterisation factor</rdfs:comment>
+        <rdfs:label xml:lang="en">has reference flow</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasReferenceFlowObject -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasReferenceFlowObject">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#ReferenceUnit"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#FlowObject"/>
+        <rdfs:comment xml:lang="en">Specifies a FlowObject that functions as the ReferenceUnit for a BalanceableProperty measure</rdfs:comment>
+        <rdfs:label xml:lang="en">has reference flow object</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasReferenceProperty -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#hasReferenceProperty">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#CF"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#BalanceableProperty"/>
+        <rdfs:comment xml:lang="en">Specifies the property that is assessed by a CF</rdfs:comment>
+        <rdfs:label xml:lang="en">has reference property</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isAssessedByIndicator -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isAssessedByIndicator">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#ImpactCategory"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#ImpactCategoryIndicator"/>
+        <rdfs:comment xml:lang="en">Specifies the impact category assessed by an impact category indicator</rdfs:comment>
+        <rdfs:label xml:lang="en">is assessed by indicator</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isAssessedByMethod -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isAssessedByMethod">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#SustainabilityTopic"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Method"/>
+        <rdfs:comment xml:lang="en">Specifies the sustainability topic assessed by a method</rdfs:comment>
+        <rdfs:label xml:lang="en">is assessed by method</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isAssessedByMethodology -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isAssessedByMethodology">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#SustainabilityTopic"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Methodology"/>
+        <rdfs:comment xml:lang="en">Specifies the sustainability topic assessed by a methodology</rdfs:comment>
+        <rdfs:label xml:lang="en">is assessed by methodology</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isInputOf -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isInputOf">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:comment xml:lang="en">Specifies the Activity that a Flow is an input to</rdfs:comment>
+        <rdfs:label xml:lang="en">is input of</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isOutputOf -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isOutputOf">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:comment xml:lang="en">Specifies the Activity that a Flow is an output of</rdfs:comment>
+        <rdfs:label xml:lang="en">is output of</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isPartOfBOM -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isPartOfBOM">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#BalanceableProperty"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#BillOfMaterials"/>
+        <rdfs:comment xml:lang="en">Specifies the properties (elemental masses) that constitute the bill of materials</rdfs:comment>
+        <rdfs:label xml:lang="en">is part of bill of materials</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isPartOfSystem -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isPartOfSystem">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#ProductSystem"/>
+        <rdfs:comment xml:lang="en">Specifies the ProductSystem that an activity or flow belongs to</rdfs:comment>
+        <rdfs:label xml:lang="en">is part of system</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isProportionalTo -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isProportionalTo">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#BalanceableProperty"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#ReferenceUnit"/>
+        <rdfs:comment xml:lang="en">Specifies the reference unit that the amount of a BalanceableProperty of a Flow is proportional to</rdfs:comment>
+        <rdfs:label xml:lang="en">is proportional to</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isUsedByLCSAMethodology -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isUsedByLCSAMethodology">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Method"/>
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Methodology"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#LCSAMethodology"/>
+        <rdfs:comment xml:lang="en">Specifies the methods and methodologies used by an LCSA methodology</rdfs:comment>
+        <rdfs:label xml:lang="en">is used by LCSA methodology</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#isUsedByMethodology -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#isUsedByMethodology">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Method"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Methodology"/>
+        <rdfs:comment xml:lang="en">Specifies the methods used by a methodology</rdfs:comment>
+        <rdfs:label xml:lang="en">is used by methodology</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#performs -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#performs">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Agent"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:comment xml:lang="en">Specifies the Activity that an Agent performs</rdfs:comment>
+        <rdfs:label xml:lang="en">performs</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#quantifiesImpactIndicator -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#quantifiesImpactIndicator">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#CF"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#ImpactCategoryIndicator"/>
+        <rdfs:comment xml:lang="en">Specifies the impact category indicator which is quantified by a CF</rdfs:comment>
+        <rdfs:label xml:lang="en">quantifies impact category indicator</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#usesModel -->
+
+    <owl:ObjectProperty rdf:about="https://orienting.eu/oriont#usesModel">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Method"/>
+        <rdfs:range rdf:resource="https://orienting.eu/oriont#CharacterisationModel"/>
+        <rdfs:comment xml:lang="en">Specifiecs the characterisation model used by a method to calculate characterisation factors</rdfs:comment>
+        <rdfs:label xml:lang="en">uses characterisation model</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- https://orienting.eu/oriont#hasReferenceYear -->
+
+    <owl:DatatypeProperty rdf:about="https://orienting.eu/oriont#hasReferenceYear">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:comment xml:lang="en">Specifies the reference year (start year) for which and activity dataset is valid</rdfs:comment>
+        <rdfs:label xml:lang="en">has reference year</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- https://orienting.eu/oriont#hasValidityYear -->
+
+    <owl:DatatypeProperty rdf:about="https://orienting.eu/oriont#hasValidityYear">
+        <rdfs:domain rdf:resource="https://orienting.eu/oriont#Activity"/>
+        <rdfs:comment xml:lang="en">Specifies the last year for which and activity dataset is valid</rdfs:comment>
+        <rdfs:label xml:lang="en">has validity year</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.ontology-of-units-of-measure.org/resource/om-2/Measure -->
+
+    <owl:Class rdf:about="http://www.ontology-of-units-of-measure.org/resource/om-2/Measure"/>
+    
+
+
+    <!-- http://www.ontology-of-units-of-measure.org/resource/om-2/Quantity -->
+
+    <owl:Class rdf:about="http://www.ontology-of-units-of-measure.org/resource/om-2/Quantity"/>
+    
+
+
+    <!-- http://www.w3.org/2004/02/skos/core#ConceptScheme -->
+
+    <owl:Class rdf:about="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+    
+
+
+    <!-- https://orienting.eu/oriont#Activity -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#Activity">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <rdfs:comment xml:lang="en">Activity is the act of making or doing something which is defined both spatially and temporally. This is one of the identifying dimensions of a datapoint. This class defines multiple properties on the type and direction of flows. ‘Process’ is a commonly used synonym in other LCA databases. (Ghose et al. 2021)</rdfs:comment>
+        <rdfs:label xml:lang="en">Activity</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ActivityType -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ActivityType">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <rdfs:comment xml:lang="en">The type of an activity, e.g, stock accumulation, steel production, etc. This class includes the labels of activities. Includes both human activities and environmental mechanisms. (Ghose et al. 2021)</rdfs:comment>
+        <rdfs:label xml:lang="en">Activity type</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#Agent -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#Agent">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <rdfs:comment xml:lang="en">An entity (person or thing) that performs an activity, usually it has a specific location. (Ghose et al. 2021)</rdfs:comment>
+        <rdfs:label xml:lang="en">Agent</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#BalanceableProperty -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#BalanceableProperty">
+        <rdfs:subClassOf rdf:resource="http://www.ontology-of-units-of-measure.org/resource/om-2/Measure"/>
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <owl:disjointWith rdf:resource="https://orienting.eu/oriont#OtherProperty"/>
+        <rdfs:comment xml:lang="en">A quantity for which the sum for all input flows must equal the sum for all output flows. A quantity that follows a conservation law. Balanceable properties are particularly relevant for validating the completeness and consistency of an Activity description or a database of such activities. (Ghose et al. 2021)</rdfs:comment>
+        <rdfs:label xml:lang="en">Balanceable property</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#BalanceablePropertyType -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#BalanceablePropertyType">
+        <rdfs:subClassOf rdf:resource="http://www.ontology-of-units-of-measure.org/resource/om-2/Quantity"/>
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <rdfs:comment xml:lang="en">Contains the labels of BalanceableProperty such as dry mass, wet mass, elemental mass, person-time, monetary value. (Ghose et al. 2021)</rdfs:comment>
+        <rdfs:label xml:lang="en">Balanceable property type</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#BillOfMaterials -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#BillOfMaterials">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">A bill of materials or product structure (sometimes bill of material, BOM or associated list) is a list of the raw materials, sub-assemblies, intermediate assemblies, sub-components, parts and the quantities of each needed to manufacture an end product (European Commission 2018)</rdfs:comment>
+        <rdfs:label xml:lang="en">Bill of materials</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#CF -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#CF">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Factor derived from a characterization model which is applied to convert an assigned life cycle inventory analysis result to the common unit of the category indicator. (ISO 14040)</rdfs:comment>
+        <rdfs:label xml:lang="en">Characterisation factor</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#CFUnit -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#CFUnit">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Units of characterisation factors are given in the unit of the indicator quantified divided by the unit of the reference flow or property (if any); otherwise it is equivalent to the indicator unit. (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Characterisation flow unit</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#CharacterisationModel -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#CharacterisationModel">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">A model underlying an LCIA method used to calculate characterization factors (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Characterisation model</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#EFCategories -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#EFCategories">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Categories used in the elementary flow categorisation system. (ORIONT)</rdfs:comment>
+        <rdfs:label xml:lang="en">Elementary flow categories</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#EFCategorisation -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#EFCategorisation">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Identifying category/compartment information exclusively used for elementary flows. E.g. &quot;Emission to air&quot;, &quot;Renewable resource&quot;, etc. (eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">Elementary flow categorisation</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ElementaryFlow -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ElementaryFlow">
+        <rdfs:subClassOf rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <owl:disjointWith rdf:resource="https://orienting.eu/oriont#OtherFlow"/>
+        <owl:disjointWith rdf:resource="https://orienting.eu/oriont#ProductFlow"/>
+        <owl:disjointWith rdf:resource="https://orienting.eu/oriont#WasteFlow"/>
+        <rdfs:comment xml:lang="en">(a) material or energy flow that has been drawn from the environment without previous human transformation and that enters the system being studied; or (b) material or energy flow that leaves the system being studied and is released into the environment without subsequent human transformation. (ISO 14040)</rdfs:comment>
+        <rdfs:label xml:lang="en">Elementary flow</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#Flow -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#Flow">
+        <rdfs:subClassOf rdf:resource="http://www.ontology-of-units-of-measure.org/resource/om-2/Measure"/>
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <rdfs:comment xml:lang="en">An input or output of an entity to or from an instance of an Activity or a directional exchange of an entity between two instances of Activity. This class contains the quantity of the entity (Flow Object) that is consumed as input or produced as output of an Activity. (Ghose et al. 2021)</rdfs:comment>
+        <rdfs:label xml:lang="en">Flow</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#FlowClasses -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#FlowClasses">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Classes used in the flow classification system. (ORIONT)</rdfs:comment>
+        <rdfs:label xml:lang="en">Flow classes</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#FlowClassification -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#FlowClassification">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Optional statistical or other classification of the data set. Typically, also used for structuring LCA databases. (eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">Flow classification</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#FlowDirection -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#FlowDirection">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Direction of Input or Output flow. (eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">Flow direction</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#FlowObject -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#FlowObject">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <rdfs:comment xml:lang="en">This class includes the labels of entities that are produced or consumed by an activity or added to or removed from a stock accumulation. (Ghose et al. 2021)</rdfs:comment>
+        <rdfs:label xml:lang="en">Flow object</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ImpactCategory -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ImpactCategory">
+        <owl:equivalentClass rdf:resource="https://orienting.eu/oriont#SocialTopic"/>
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Class representing environmental issues of concern to which life cycle inventory analysis results may be assigned; for example climate change or acidification. (ISO 14040)</rdfs:comment>
+        <rdfs:label xml:lang="en">Impact category</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ImpactCategoryIndicator -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ImpactCategoryIndicator">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Quantifiable representation of an impact category. (ISO 14040)</rdfs:comment>
+        <rdfs:label xml:lang="en">Impact category indicator</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ImpactCategoryName -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ImpactCategoryName">
+        <owl:equivalentClass rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Name of the impact category. (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Impact category name</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#IndicatorName -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#IndicatorName">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Description of the meaning of the impact indicator. (based on eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">Indicator name</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#IndicatorUnit -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#IndicatorUnit">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Special units used for impact category indicators such as &quot;kg CO2 equivalent&quot; or &quot;mol N equivalent&quot;. (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Impact category indicator unit</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#LCIAResult -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#LCIAResult">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">LCIA results provided for an activity. (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">LCIA result</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#LCSAMethodology -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#LCSAMethodology">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">LCSA methodology is understood as a set of different methods to perform a life cycle sustainability assessment. (ORIONT)</rdfs:comment>
+        <rdfs:label xml:lang="en">LCSA methodology</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#LCSAMethodologyName -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#LCSAMethodologyName">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Name of the LCSA methodology. (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">LCSA methodology name</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#LCStage -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#LCStage">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Stage of a product system; the stages defined in ORIENTING are “Design - R&amp;D”, “Raw material acquisition”, “Manufacturing”, “Installation/distribution/retail”, “Use”, “Maintenance, repair, refurbishment”, and “End-of-life”; “Design - R&amp;D” and “Maintenance, repair, refurbishment” are additional to the minimum stages defined in the PEFCR guidance (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Life cycle stage</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#Location -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#Location">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Location, country or region the data set represents. (eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">Location</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#Method -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#Method">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Method refers to a procedure, e.g. evaluating the sustainability performance of products regarding an individual aspect (e.g. climate change, child labour, investment costs) under a life cycle perspective (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Method</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#MethodName -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#MethodName">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Name of the method. Composed as follows &quot;LCIA methodology short name; Impact category/ies; midpoint/endpoint; Impact indicator; Source short name&quot;. Not applicable components are left out. Examples: &quot;Impacts2007+; Climate change; midpoint; Global Warming Potential; IPCC 2001&quot;; &quot;ABC 2006; Acidification; endpoint; Species diversity loss; John Doe 2006&quot;; &quot;My-indicator2009; combined; endpoint; Ecopoints; various&quot;. (based on eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">MethodName</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#Methodology -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#Methodology">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Methodology is understood as a set of different methods (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Methodology</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#MethodologyName -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#MethodologyName">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Name of the LCIA methodology/ies the method belongs to, if any. (based on eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">Methodology name</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#OtherFlow -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#OtherFlow">
+        <rdfs:subClassOf rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:comment xml:lang="en">Exchange of a type other than elementary/product/waste, e.g. dummy or modelling support flows. (based on eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">Other flow</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#OtherProperty -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#OtherProperty">
+        <rdfs:subClassOf rdf:resource="http://www.ontology-of-units-of-measure.org/resource/om-2/Measure"/>
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <rdfs:comment xml:lang="en">A quantity for which the sum for all input flows does not balance with the sum for all output flows. (ORIONT)</rdfs:comment>
+        <rdfs:label xml:lang="en">Other property</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#OtherPropertyType -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#OtherPropertyType">
+        <rdfs:subClassOf rdf:resource="http://www.ontology-of-units-of-measure.org/resource/om-2/Quantity"/>
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <rdfs:comment xml:lang="en">Contains the labels of UnbalanceableProperty such as product lifetime or recycled content. (ORIONT)</rdfs:comment>
+        <rdfs:label xml:lang="en">Other property type</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ProductFlow -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ProductFlow">
+        <rdfs:subClassOf rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:comment xml:lang="en">Products entering from or leaving to another product system. (ISO 14040)</rdfs:comment>
+        <rdfs:label xml:lang="en">Product flow</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ProductSystem -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ProductSystem">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Product system: Collection of unit processes with elementary and product flows, performing one or more defined functions, and which models the life cycle of a product. (ISO 14040)</rdfs:comment>
+        <rdfs:label xml:lang="en">Product system</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ReferenceUnit -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ReferenceUnit">
+        <rdfs:subClassOf rdf:resource="http://www.ontology-of-units-of-measure.org/resource/om-2/Measure"/>
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2004/02/skos/core#ConceptScheme"/>
+        <rdfs:comment xml:lang="en">Quantified performance of a product system to which LCSA data and impacts are referred. (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Reference unit</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ReferenceYear -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ReferenceYear">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Start year of the time period for which the data set is valid (until ValidityYear). For data sets that combine data from different years, the most representative year is given regarding the overall environmental impact. In that case, the reference year is derived by expert judgement. (eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">Reference year</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#Sector -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#Sector">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Sector refers to economic/industry sectors as used in input-output models to consider transactions between these different sectors of a national economy or different regional economies (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Sector</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#SocialTopic -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#SocialTopic">
+        <rdfs:comment>A generic terminology used to describe more generically social issues of concern, both positive and negative. They can include social risks, or can be measured with reference to performances, or give rise to social impacts. (ORIENTING)</rdfs:comment>
+        <rdfs:label>Social topic</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#SocialTopicName -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#SocialTopicName">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Description of the meaning of the social topic. (ORIONT)</rdfs:comment>
+        <rdfs:label xml:lang="en">Social topic name</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#Stakeholder -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#Stakeholder">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Person or organisation that can affect, be affected by, or perceive itself to be affected by a decision or activity”. (ISO 14050:2020)</rdfs:comment>
+        <rdfs:label xml:lang="en">Stakeholder</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#SustainabilityTopic -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#SustainabilityTopic">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">Sustainability topics in ORIENTING include the three classic sustainability domains or pillars (LCA, social LCA and Life Cycle Costing) as well as (material) Criticality and (material) Circularity (ORIENTING)</rdfs:comment>
+        <rdfs:label xml:lang="en">Sustainability topic</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#ValidityYear -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#ValidityYear">
+        <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+        <rdfs:comment xml:lang="en">End year of the time period for which the data set is still valid / sufficiently representative. This date also determines when a data set revision / remodelling is required or recommended due to expected relevant changes in environmentally or technically relevant inventory values, including in the background system. (eILCD)</rdfs:comment>
+        <rdfs:label xml:lang="en">Validity year</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- https://orienting.eu/oriont#WasteFlow -->
+
+    <owl:Class rdf:about="https://orienting.eu/oriont#WasteFlow">
+        <rdfs:subClassOf rdf:resource="https://orienting.eu/oriont#Flow"/>
+        <rdfs:comment xml:lang="en">Substances or objects which the holder intends or is required to dispose of. (ISO 14040)</rdfs:comment>
+        <rdfs:label xml:lang="en">Waste flow</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- https://orienting.eu/oriont#Accessibility -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Accessibility">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Accessibility</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Acidification -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Acidification">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Acidification</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Affordability -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Affordability">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Affordability</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#CTUe -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#CTUe">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">CTUe</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#CTUh -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#CTUh">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">CTUh</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Corruption -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Corruption">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Corruption</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#EUCRM -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#EUCRM">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">EUCRM</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#End-of-life -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#End-of-life">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#LCStage"/>
+        <rdfs:label xml:lang="en">End-of-life</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#GeoPolRisk -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#GeoPolRisk">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">GeoPolRisk</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Input -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Input">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#FlowDirection"/>
+        <rdfs:label xml:lang="en">Input</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#LCA -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#LCA">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SustainabilityTopic"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#LCC -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#LCC">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SustainabilityTopic"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Manufacturing -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Manufacturing">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#LCStage"/>
+        <rdfs:label xml:lang="en">Manufacturing</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Output -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Output">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#FlowDirection"/>
+        <rdfs:label xml:lang="en">Output</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Percent -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Percent">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Privacy -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Privacy">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Privacy</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Pt -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Pt">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">Pt</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#S-LCA -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#S-LCA">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SustainabilityTopic"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Use -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Use">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#LCStage"/>
+        <rdfs:label xml:lang="en">Use</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Worker -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Worker">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#Stakeholder"/>
+        <rdfs:label xml:lang="en">Worker</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#children -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#children">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#Stakeholder"/>
+        <rdfs:label xml:lang="en">children</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#m3 -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#m3">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">m3</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#society -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#society">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#Stakeholder"/>
+        <rdfs:label xml:lang="en">society</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Access%20to%20material,%20immaterial%20resources%20and%20cultural%20heritage -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Access%20to%20material,%20immaterial%20resources%20and%20cultural%20heritage">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Access to material, immaterial resources and cultural heritage</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Child%20labour -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Child%20labour">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Child labour</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Climate%20change -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Climate%20change">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Climate change</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Climate%20change:%20Biogenic -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Climate%20change:%20Biogenic">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Climate change: Biogenic</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Climate%20change:%20Fossil -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Climate%20change:%20Fossil">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Climate change: Fossil</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Climate%20change:%20Land%20use%20and%20land%20use%20change -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Climate%20change:%20Land%20use%20and%20land%20use%20change">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Climate change: Land use and land use change</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Community%20engagement -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Community%20engagement">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Community engagement</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Contribution%20to%20economic%20development%20(including%20local%20employment) -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Contribution%20to%20economic%20development%20(including%20local%20employment)">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Contribution to economic development (including local employment)</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Delocalization%20and%20migration -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Delocalization%20and%20migration">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Delocalization and migration</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Design%20-%20R&amp;D -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Design%20-%20R&amp;D">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#LCStage"/>
+        <rdfs:label xml:lang="en">Design - R&amp;D</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Discrimination%20and%20equal%20opportunities -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Discrimination%20and%20equal%20opportunities">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Discrimination and equal opportunities</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#EUCRM%20EI -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#EUCRM%20EI">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">EUCRM EI</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#EUCRM%20SR -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#EUCRM%20SR">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">EUCRM SR</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Economic%20Importance -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Economic%20Importance">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Economic Importance</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Ecotoxicity,%20freshwater -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Ecotoxicity,%20freshwater">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Ecotoxicity, freshwater</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Effectiveness%20and%20comfort -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Effectiveness%20and%20comfort">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Effectiveness and comfort</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#End-of-life%20responsibility -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#End-of-life%20responsibility">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">End-of-life responsibility</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Ethical%20treatment%20of%20animals -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Ethical%20treatment%20of%20animals">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Ethical treatment of animals</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Eutrophication,%20freshwater -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Eutrophication,%20freshwater">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Eutrophication, freshwater</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Eutrophication,%20marine -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Eutrophication,%20marine">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Eutrophication, marine</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Eutrophication,%20terrestrial -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Eutrophication,%20terrestrial">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Eutrophication, terrestrial</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Fair%20competition -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Fair%20competition">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Fair competition</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Forced%20labour -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Forced%20labour">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Forced labour</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Freedom%20of%20association%20and%20collective%20bargaining -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Freedom%20of%20association%20and%20collective%20bargaining">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Freedom of association and collective bargaining</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Health%20and%20safety -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Health%20and%20safety">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Health and safety</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Human%20toxicity,%20cancer -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Human%20toxicity,%20cancer">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Human toxicity, cancer</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Human%20toxicity,%20non-cancer -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Human%20toxicity,%20non-cancer">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Human toxicity, non-cancer</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Installation/distribution/retail -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Installation/distribution/retail">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#LCStage"/>
+        <rdfs:label xml:lang="en">Installation/distribution/retail</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Ionising%20radiation,%20human%20health -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Ionising%20radiation,%20human%20health">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Ionising radiation, human health</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Land%20use%20Biodiversity -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Land%20use%20Biodiversity">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Land use Biodiversity</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Land%20use,%20total -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Land%20use,%20total">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Land use, total</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Land%20use,%20Biotic%20resources -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Land%20use,%20Biotic%20resources">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Land use, Biotic resources</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Land%20use,%20Soil%20Quality -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Land%20use,%20Soil%20Quality">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Land use, Soil Quality</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Local%20community -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Local%20community">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#Stakeholder"/>
+        <rdfs:label xml:lang="en">Local community</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Maintenance,%20repair,%20refurbishment -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Maintenance,%20repair,%20refurbishment">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#LCStage"/>
+        <rdfs:label xml:lang="en">Maintenance, repair, refurbishment</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Material%20circularity -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Material%20circularity">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SustainabilityTopic"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Material%20criticality -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Material%20criticality">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SustainabilityTopic"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Material%20Circularity%20Indicator -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Material%20Circularity%20Indicator">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">Material Circularity Indicator</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Net%20Present%20Value -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Net%20Present%20Value">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">Net Present Value</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Ozone%20depletion -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Ozone%20depletion">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Ozone depletion</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Particulate%20Matter -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Particulate%20Matter">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Particulate Matter</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Percent%20Circularity -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Percent%20Circularity">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">% Circularity</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Photochemical%20ozone%20formation%20-%20human%20health -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Photochemical%20ozone%20formation%20-%20human%20health">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Photochemical ozone formation - human health</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Present%20Costs -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Present%20Costs">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">Present Costs</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Prevention%20and%20mitigation%20of%20armed%20conflicts -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Prevention%20and%20mitigation%20of%20armed%20conflicts">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Prevention and mitigation of armed conflicts</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Promoting%20social%20responsibility%20and%20public%20commitments%20to%20sustainability%20issues -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Promoting%20social%20responsibility%20and%20public%20commitments%20to%20sustainability%20issues">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Promoting social responsibility and public commitments to sustainability issues</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Raw%20material%20acquisition -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Raw%20material%20acquisition">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#LCStage"/>
+        <rdfs:label xml:lang="en">Raw material acquisition</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Remuneration%20and%20social%20benefits -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Remuneration%20and%20social%20benefits">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Remuneration and social benefits</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Resource%20use,%20fossils -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Resource%20use,%20fossils">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Resource use, fossils</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Resource%20use,%20minerals%20and%20metals -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Resource%20use,%20minerals%20and%20metals">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Resource use, minerals and metals</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Respect%20of%20indigenous%20rights%20and%20land%20rights -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Respect%20of%20indigenous%20rights%20and%20land%20rights">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Respect of indigenous rights and land rights</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Respect%20of%20intellectual%20property%20rights -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Respect%20of%20intellectual%20property%20rights">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Respect of intellectual property rights</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Responsible%20communication%20and%20feedback%20mechanisms -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Responsible%20communication%20and%20feedback%20mechanisms">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Responsible communication and feedback mechanisms</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Skill%20development%20and%20technology%20development -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Skill%20development%20and%20technology%20development">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Skill development and technology development</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Supplier%20relationships%20and%20fair%20trading -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Supplier%20relationships%20and%20fair%20trading">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Supplier relationships and fair trading</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Supply%20risk -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Supply%20risk">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Supply risk</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Total%20Undiscounted%20Costs -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Total%20Undiscounted%20Costs">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">Total Undiscounted Costs</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Total%20Undiscounted%20Value -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Total%20Undiscounted%20Value">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorName"/>
+        <rdfs:label xml:lang="en">Total Undiscounted Value</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#User/consumer -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#User/consumer">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#Stakeholder"/>
+        <rdfs:label xml:lang="en">User/consumer</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Water%20use -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Water%20use">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#ImpactCategoryName"/>
+        <rdfs:label xml:lang="en">Water use</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Women’s%20empowerment -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Women’s%20empowerment">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Women’s empowerment</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#Work%20life%20balance%20and%20working%20hours -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#Work%20life%20balance%20and%20working%20hours">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#SocialTopicName"/>
+        <rdfs:label xml:lang="en">Work life balance and working hours</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#kg%20CFC-11%20eq -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#kg%20CFC-11%20eq">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">kg CFC-11 eq</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#kg%20CO2%20eq -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#kg%20CO2%20eq">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">kg CO2 eq</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#kg%20NMVOC%20eq -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#kg%20NMVOC%20eq">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">kg NMVOC eq</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#kg%20P%20eq -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#kg%20P%20eq">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">kg P eq</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#kg%20PM2.5%20eq -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#kg%20PM2.5%20eq">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">kg PM2.5 eq</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#kg%20Sb%20eq -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#kg%20Sb%20eq">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">kg Sb eq</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#kg%20U235%20eq -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#kg%20U235%20eq">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">kg U235 eq</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#mol%20H+%20eq -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#mol%20H+%20eq">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">mol H+ eq</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#mol%20N%20eq -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#mol%20N%20eq">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#IndicatorUnit"/>
+        <rdfs:label xml:lang="en">mol N eq</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#small%20scale%20entrepreneur -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#small%20scale%20entrepreneur">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#Stakeholder"/>
+        <rdfs:label xml:lang="en">small scale entrepreneur</rdfs:label>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- https://orienting.eu/oriont#value%20chain%20actor -->
+
+    <owl:NamedIndividual rdf:about="https://orienting.eu/oriont#value%20chain%20actor">
+        <rdf:type rdf:resource="https://orienting.eu/oriont#Stakeholder"/>
+        <rdfs:label xml:lang="en">value chain actor</rdfs:label>
+    </owl:NamedIndividual>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi -->
+

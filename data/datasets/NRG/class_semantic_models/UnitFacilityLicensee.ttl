@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+@prefix enoptl: <http://example.org/ontology/energy-ptl#> .
+
+enoptl:UnitFacilityLicensee eno:dateSynchronized xsd:date ;
+    enoptl:licenseeInterest xsd:decimal ;
+    enoptl:TUFLicenceeCompany eno:Company ;
+    enoptl:TUFLicenceeForTUF enoptl:UnitFacility .

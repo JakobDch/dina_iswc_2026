@@ -1,0 +1,16 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:WellboreOilSample eno:dateOilSampleReceived xsd:date ;
+    eno:dateOilSampleTest xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:dateUpdated xsd:date ;
+    eno:oilSampleBottomDepth xsd:decimal ;
+    eno:oilSampleFluidType xsd:string ;
+    eno:oilSampleTestNumber xsd:string ;
+    eno:oilSampleTestType xsd:string ;
+    eno:oilSampleTopDepth xsd:decimal ;
+    eno:oilSampleTestForWellbore eno:PlatformBorehole ;
+    eno:oilSampleTestForWellbore eno:InitialWellbore ;
+    eno:oilSampleTestForWellbore eno:AppraisalWellbore ;
+    eno:oilSampleTestForWellbore eno:Borehole .

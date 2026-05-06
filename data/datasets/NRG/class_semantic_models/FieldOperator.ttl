@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:FieldOperator eno:dateFieldOperatorFrom xsd:date ;
+    eno:dateFieldOperatorTo xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:fieldOperator eno:Company ;
+    eno:operatorForField eno:Deposit .

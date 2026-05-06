@@ -1,0 +1,7 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix tro: <http://example.org/ontology/transport#> .
+
+tro:Frequency tro:endTime xsd:string ;
+    tro:headwaySeconds xsd:integer ;
+    tro:startTime xsd:string ;
+    tro:journey tro:Trip .

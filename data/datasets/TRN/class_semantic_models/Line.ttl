@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix tro: <http://example.org/ontology/transport#> .
+
+tro:Line tro:abbreviation xsd:string ;
+    tro:color xsd:string ;
+    tro:fullTitle xsd:string ;
+    tro:textColor xsd:string ;
+    tro:agency tro:Agency .
