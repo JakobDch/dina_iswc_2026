@@ -164,7 +164,7 @@ under [tests/](tests/) cover the column matching and the retrieval metrics.
 
 [results/README.md](results/README.md) describes every run directory, the per-backbone snapshot in
 `results/paper/` and the derived files in `results/analysis/`. The evaluated records of all runs are in
-the repository. The raw traces (about 1,400 files, 1.5 GB) are distributed as a separate archive
+the repository. The raw traces (2,398 files, 630 MB unpacked, 17 MB as zip) are distributed as a separate archive
 (`vkgqa_experiment_traces.zip`, see the data availability statement of the paper); unpack it in the
 repository root and every trace lands under `results/experiments/<run>/traces/`.
 
