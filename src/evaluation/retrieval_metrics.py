@@ -319,6 +319,7 @@ RDF_TYPE_URI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 def extract_gt_paths(
     gt_sparql: str,
     prefix_map: dict[str, str] | None = None,
+    schema: "SchemaGraph | None" = None,
 ) -> list[tuple[str | None, str]]:
     """Extract ``(domain_class_uri, property_uri)`` pairs from a GT SPARQL query.
 
@@ -331,7 +332,12 @@ def extract_gt_paths(
     :mod:`src.evaluation.retrieval_ground_truth`.
 
     - ``rdf:type`` predicates are skipped (no path is generated for them)
-    - If ``?s`` has **no** type assertion, ``domain_class`` is ``None`` —
+    - If ``?s`` has no type assertion but appears as the object of a triple
+      whose predicate has a class-valued range in ``schema``, that range is
+      used as the subject's type. Without this, an untyped variable makes
+      :func:`build_schema_gt` expand to every class carrying the property,
+      which on a large schema inflates the GT by two orders of magnitude.
+    - If ``?s`` still has **no** type, ``domain_class`` is ``None`` —
       in that case the path-coherence check falls back to property-only
       presence (same as ``property_recall``)
     - Uses rdflib's SPARQL parser & algebra (not regex) — robust to
@@ -364,6 +370,20 @@ def extract_gt_paths(
 
     # Variable → set of class URIs (from ?v rdf:type C across the whole tree)
     type_map = _build_type_map(all_triples)
+
+    # Infer the type of variables that carry no rdf:type assertion but occur as
+    # the object of a property with a class-valued range.
+    if schema is not None:
+        for s, p, o in all_triples:
+            if not isinstance(o, Variable) or not isinstance(p, URIRef):
+                continue
+            var_name = f"?{o}"
+            if type_map.get(var_name):
+                continue  # already typed explicitly
+            range_uri = schema.property_ranges.get(str(p))
+            if range_uri and range_uri in schema.class_properties:
+                type_map[var_name] = {range_uri}
+            _ = s
 
     edges: list[tuple[str | None, str]] = []
     seen: set[tuple[str, str]] = set()
@@ -401,11 +421,21 @@ def calculate_schema_path_coherence(
     turtle_strings: list[str],
     schema: "SchemaGraph",
 ) -> tuple[float, int, int, list[dict]]:
-    """Compute path coherence using SchemaGraph for subclass resolution.
+    """Compute path coherence with subclass-expansion matching.
 
-    ACCEPTABLE handling: paths whose necessity is ACCEPTABLE are only
-    counted towards the effective GT if they are actually matched.  This
-    means missing an ACCEPTABLE path does not penalise recall.
+    Matching rule:
+    - If the retrieved set contains the GT domain class itself for the
+      property → direct match (1/1).
+    - Otherwise, if at least one concrete subclass of the GT domain class
+      with that property in the schema was retrieved, the GT path is
+      expanded into one expected path per such subclass and recall is
+      measured over how many of those subclass-level paths the agent
+      retrieved (k/n).
+    - No match at all → 0/1 (single GT path, missed).
+
+    ACCEPTABLE handling: ACCEPTABLE paths only contribute to the
+    effective GT denominator by what was actually matched, so missing an
+    ACCEPTABLE path never penalises recall.
 
     Returns:
         ``(score, matched, effective_total, details)``
@@ -435,32 +465,53 @@ def calculate_schema_path_coherence(
     matched = 0
     details: list[dict] = []
     required_total = 0
-    acceptable_matched = 0
+    acceptable_denom = 0
 
     for domain_class, prop_uri, necessity in schema_gt.paths:
         if domain_class is None:
             ok = prop_uri in predicate_index
+            m, e = (1, 1) if ok else (0, 1)
+        elif (domain_class, prop_uri) in edge_index:
+            # Direct match on the GT class itself
+            m, e = 1, 1
         else:
-            valid_classes = {domain_class} | schema.get_all_descendants(domain_class)
-            ok = any((c, prop_uri) in edge_index for c in valid_classes)
+            # Expand to concrete subclasses with this property in the schema
+            descendants = schema.get_all_descendants(domain_class)
+            relevant_subs = {
+                c for c in descendants
+                if c in schema.class_property_ranges
+                and prop_uri in schema.class_property_ranges[c]
+            }
+            if not relevant_subs:
+                m, e = 0, 1
+            else:
+                matched_subs = sum(
+                    1 for sub in relevant_subs
+                    if (sub, prop_uri) in edge_index
+                )
+                if matched_subs == 0:
+                    m, e = 0, 1
+                else:
+                    m, e = matched_subs, len(relevant_subs)
 
-        if ok:
-            matched += 1
-            if necessity == RetrievalNecessity.ACCEPTABLE:
-                acceptable_matched += 1
+        matched += m
 
         if necessity == RetrievalNecessity.REQUIRED:
-            required_total += 1
+            required_total += e
+        elif necessity == RetrievalNecessity.ACCEPTABLE:
+            # ACCEPTABLE: never penalises recall, only adds to numerator/denom what matched
+            acceptable_denom += m
 
         details.append({
             "domain": domain_class,
             "property": prop_uri,
             "necessity": necessity.value,
-            "matched": bool(ok),
+            "matched": m,
+            "expected": e,
         })
 
-    # Effective GT = required paths + acceptable paths that matched
-    effective_total = required_total + acceptable_matched
+    # Effective GT = required (with expansion) + acceptable that matched
+    effective_total = required_total + acceptable_denom
     score = matched / effective_total if effective_total > 0 else 0.0
 
     return score, matched, effective_total, details
@@ -473,16 +524,28 @@ def calculate_schema_triple_metrics(
 ) -> tuple[float, float, float, int, int]:
     """Compare GT schema triples against retrieved triples.
 
-    A GT triple ``(S_gt, P_gt, O_gt)`` matches a retrieved triple
-    ``(S_ret, P_ret, O_ret)`` if:
-    - ``P_gt == P_ret`` (exact property match)
-    - ``S_ret == S_gt`` OR ``S_ret`` is a descendant of ``S_gt``
-    - ``O_ret == O_gt`` OR ``O_ret`` is a descendant of ``O_gt``
-      (only for class ranges, not XSD types)
+    Matching rule (subclass-expansion):
+    - The primary expectation is the GT class itself. A retrieved triple
+      matches a GT triple ``(S_gt, P_gt, O_gt)`` directly if its subject
+      equals ``S_gt``, its predicate equals ``P_gt``, and its object is
+      ``O_gt`` (or, for class ranges, a descendant of ``O_gt``). XSD
+      ranges are matched exactly.
+    - If the GT class itself is missing from the retrieved set, the GT
+      triple is expanded into one expected triple per concrete subclass
+      of ``S_gt`` that has ``P_gt`` in the schema. Recall is then measured
+      over how many of these subclass-level triples are covered.
+    - If no direct match and no subclass match exists, the GT triple
+      counts as 0/1 (one expected concept missed).
+
+    Precision is computed against any retrieved triple whose predicate
+    appears in the GT and that matches some GT triple by direct or
+    subclass coverage (so retrieving a subclass triple is never punished
+    as a false positive on its own).
 
     ACCEPTABLE handling:
-    - ACCEPTABLE triple found → TP
-    - ACCEPTABLE triple NOT found → removed from effective GT (no FN)
+    - ACCEPTABLE triples only contribute to the effective GT denominator
+      by what was actually matched, so missing an ACCEPTABLE concept (or
+      missing some of its subclass variants) never penalises recall.
 
     Returns:
         ``(precision, recall, f1, matched_count, effective_gt_count)``
@@ -516,55 +579,75 @@ def calculate_schema_triple_metrics(
 
     XSD_PREFIX = "http://www.w3.org/2001/XMLSchema#"
 
-    def _triple_matches(gt_s: str, gt_p: str, gt_o: str) -> bool:
-        """Check if any retrieved triple matches this GT triple."""
-        valid_subjects = _get_valid_set(gt_s)
-        # For object: subclass-aware only for class ranges, exact for XSD
+    def _valid_objects(gt_o: str) -> set[str]:
         if gt_o.startswith(XSD_PREFIX):
-            valid_objects = {gt_o}
-        else:
-            valid_objects = _get_valid_set(gt_o)
+            return {gt_o}
+        return _get_valid_set(gt_o)
 
-        for ret_s, ret_p, ret_o in retrieved_triples:
-            if ret_p == gt_p and ret_s in valid_subjects and ret_o in valid_objects:
-                return True
-        return False
+    def _matches_for_triple(gt_s: str, gt_p: str, gt_o: str) -> tuple[int, int, set[tuple[str, str, str]]]:
+        """Apply the subclass-expansion rule.
 
-    # Separate required and acceptable GT triples
+        Returns ``(matched_count, expected_count, matched_retrieved_triples)``.
+        """
+        v_objs = _valid_objects(gt_o)
+
+        direct = {
+            (rs, rp, ro)
+            for rs, rp, ro in retrieved_triples
+            if rs == gt_s and rp == gt_p and ro in v_objs
+        }
+        if direct:
+            return 1, 1, direct
+
+        descendants = schema.get_all_descendants(gt_s)
+        relevant_subs = {
+            c for c in descendants
+            if c in schema.class_property_ranges
+            and gt_p in schema.class_property_ranges[c]
+        }
+        if not relevant_subs:
+            return 0, 1, set()
+
+        matched_subs: set[str] = set()
+        matched_set: set[tuple[str, str, str]] = set()
+        for sub in relevant_subs:
+            sub_hits = {
+                (rs, rp, ro)
+                for rs, rp, ro in retrieved_triples
+                if rs == sub and rp == gt_p and ro in v_objs
+            }
+            if sub_hits:
+                matched_subs.add(sub)
+                matched_set.update(sub_hits)
+
+        if not matched_subs:
+            return 0, 1, set()
+        return len(matched_subs), len(relevant_subs), matched_set
+
     required_matched = 0
     required_total = 0
     acceptable_matched = 0
+    acceptable_denom = 0
     total_matched = 0
 
     matched_retrieved: set[tuple[str, str, str]] = set()
 
     for gt_s, gt_p, gt_o, necessity in schema_gt.triples:
-        found = _triple_matches(gt_s, gt_p, gt_o)
-        if found:
-            total_matched += 1
-            # Track which retrieved triples were matched (for precision)
-            valid_subjects = _get_valid_set(gt_s)
-            if gt_o.startswith(XSD_PREFIX):
-                valid_objects = {gt_o}
-            else:
-                valid_objects = _get_valid_set(gt_o)
-            for ret_s, ret_p, ret_o in retrieved_triples:
-                if ret_p == gt_p and ret_s in valid_subjects and ret_o in valid_objects:
-                    matched_retrieved.add((ret_s, ret_p, ret_o))
+        m, e, ms = _matches_for_triple(gt_s, gt_p, gt_o)
+        matched_retrieved.update(ms)
+        total_matched += m
 
         if necessity == RetrievalNecessity.REQUIRED:
-            required_total += 1
-            if found:
-                required_matched += 1
+            required_matched += m
+            required_total += e
         elif necessity == RetrievalNecessity.ACCEPTABLE:
-            if found:
-                acceptable_matched += 1
+            acceptable_matched += m
+            acceptable_denom += m
 
-    # Effective GT = required + acceptable that were found
-    effective_gt = required_total + acceptable_matched
+    # Effective GT = required (with expansion) + acceptable that were matched
+    effective_gt = required_total + acceptable_denom
 
-    # Precision: fraction of retrieved triples that match some GT triple
-    # (only count retrieved triples with predicates that appear in GT)
+    # Precision: fraction of retrieved triples (with GT predicates) that contribute to TP
     gt_predicates = {p for _s, p, _o, _n in schema_gt.triples}
     relevant_retrieved = {
         (s, p, o) for s, p, o in retrieved_triples if p in gt_predicates
@@ -623,3 +706,47 @@ def calculate_retrieval_metrics(
     result.gt_schema_turtle = schema_gt.to_turtle(schema.prefixes)
 
     return result
+
+
+def calculate_retrieval_metrics_best_variant(
+    turtle_strings: list[str],
+    ground_truth: "AdaptiveGroundTruth",
+) -> RetrievalMetricsResult:
+    """Score retrieval candidate-wise against every admissible reading.
+
+    Mirrors the result-level evaluation: the retrieval ground truth R_Q is built
+    per admissible query Q, the retrieved schema triples are scored against each
+    R_Q, and the reading the agent covers best (highest triple recall, ties by
+    path coherence) is reported. Recall and path coherence therefore ask whether
+    the agent surfaced the schema of *one* admissible reading in full, not the
+    union of all of them. Precision is measured against the union of all R_Q,
+    so that a triple belonging to any admissible reading is never a false
+    positive. F1 combines the reported recall with that precision.
+
+    With a single reading this reduces to calculate_retrieval_metrics on the
+    (then identical) union.
+    """
+    from src.evaluation.retrieval_ground_truth import build_schema_gt, build_schema_gt_for_query
+    from src.validation.schema_graph import get_combined_schema
+
+    dataset_ids = ground_truth.datasets or [ground_truth.dataset]
+    schema = get_combined_schema(dataset_ids)
+    union_gt = build_schema_gt_for_query(ground_truth)
+
+    variants = list(ground_truth.sparql_queries or [])
+    if len(variants) <= 1:
+        return calculate_retrieval_metrics(turtle_strings, schema, union_gt)
+
+    per_reading = []
+    for sparql in variants:
+        gt = build_schema_gt(sparql, dataset_ids, ground_truth.query_id)
+        if gt.triples:
+            per_reading.append(calculate_retrieval_metrics(turtle_strings, schema, gt))
+    if not per_reading:
+        return calculate_retrieval_metrics(turtle_strings, schema, union_gt)
+
+    best = max(per_reading, key=lambda r: (r.schema_triple_recall, r.schema_path_coherence))
+    union_res = calculate_retrieval_metrics(turtle_strings, schema, union_gt)
+    best.schema_triple_precision = union_res.schema_triple_precision
+    best.schema_triple_f1 = _f1(best.schema_triple_precision, best.schema_triple_recall)
+    return best

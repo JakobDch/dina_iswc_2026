@@ -1,6 +1,0 @@
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix eno: <http://example.org/ontology/energy#> .
-
-eno:WellboreCorePhoto eno:coreNo xsd:integer ;
-    eno:corePhotoTitle xsd:string ;
-    eno:corePhotoForWellbore eno:PlatformBorehole .

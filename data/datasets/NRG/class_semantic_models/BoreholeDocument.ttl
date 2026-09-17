@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:BoreholeDocument eno:dateSynchronized xsd:date ;
+    eno:dateUpdated xsd:date ;
+    eno:documentFormat xsd:string ;
+    eno:documentName xsd:string ;
+    eno:documentSize xsd:decimal ;
+    eno:documentType xsd:string ;
+    eno:documentForBorehole eno:PlatformBorehole ;
+    eno:documentForBorehole eno:Borehole .

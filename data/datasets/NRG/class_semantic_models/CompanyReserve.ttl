@@ -15,4 +15,4 @@ eno:CompanyReserve eno:companyShare xsd:decimal ;
     eno:remainingOil xsd:decimal ;
     eno:remainingOilEquivalents xsd:decimal ;
     eno:reservesForCompany eno:Company ;
-    eno:reservesForField eno:Deposit .
+    eno:reservesForDeposit eno:Deposit .

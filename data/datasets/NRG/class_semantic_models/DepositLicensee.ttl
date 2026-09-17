@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:DepositLicensee eno:SDFI xsd:decimal ;
+    eno:companyShare xsd:decimal ;
+    eno:dateDepositLicenseeFrom xsd:date ;
+    eno:dateDepositLicenseeTo xsd:date ;
+    eno:dateDepositOwnerFrom xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:depositLicensee eno:Company ;
+    eno:licenseeForDeposit eno:Deposit .

@@ -11,8 +11,8 @@
 # Namespace: https://orienting.eu/oriont-ext#
 # Prefix: oriont-ext
 #
-# These properties extend the ORIONT ontology with additional datatype
-# properties for LCA data modelling.
+# Diese Properties erweitern die ORIONT-Ontologie um fehlende Datatype
+# Properties für die Modellierung von LCA-Daten.
 # =============================================================================
 
 <https://orienting.eu/oriont-ext>

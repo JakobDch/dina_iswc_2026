@@ -16,6 +16,7 @@ from langchain_anthropic import ChatAnthropic
 from langchain_ollama import ChatOllama
 
 from src.config import get_settings, normalize_content
+from src.config import get_openrouter_kwargs
 from src.tools.retrieval_tools import SEMANTIC_TOOLS, get_schema_index
 from src.tracing import TraceEvent, TraceEventType, get_tracer
 from src.tracing.llm_callback import create_llm_callback
@@ -197,16 +198,17 @@ class SemanticRetrievalAgent:
                 api_key=os.getenv("OPENROUTER_API_KEY", ""),
                 base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
                 temperature=0.1,
+                **get_openrouter_kwargs(llm_model),
             )
         elif llm_model.startswith("openai/"):
             self.llm = ChatOpenAI(
                 model=llm_model,
-                api_key=os.getenv("LOCAL_PROXY_API_KEY", ""),
-                base_url=os.getenv("LOCAL_PROXY_BASE_URL", "http://localhost:4000/v1"),
+                api_key=os.getenv("KI4BUW_API_KEY", ""),
+                base_url=os.getenv("KI4BUW_BASE_URL", "https://llm.ki4buw.de/v1"),
                 temperature=0.1,
             )
         elif is_ollama:
-            ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+            ollama_base_url = os.getenv("REMOTE_OLLAMA_LLAMA31_70B_BASE_URL", "http://localhost:11434")
             self.llm = ChatOllama(
                 model=llm_model,
                 base_url=ollama_base_url,
@@ -301,19 +303,19 @@ class SemanticRetrievalAgent:
             # Add feedback as new message to continue the conversation
             feedback_parts = []
             if needed_triple_description:
-                feedback_parts.append(f"""## TARGETED SEARCH - SPARQL agent needs a specific schema element
+                feedback_parts.append(f"""## TARGETED SEARCH - SPARQL Agent braucht spezifisches Schema
 
-The SPARQL agent has determined that a specific triple/schema element is missing:
+Der SPARQL Agent hat analysiert dass ein bestimmtes Tripel/Schema-Element fehlt:
 
 "{needed_triple_description}"
 
-Search for properties/classes that could model this relation.""")
+Suche nach Properties/Classes die diese Beziehung modellieren koennten.""")
             if orchestrator_feedback:
                 feedback_parts.append(f"## Orchestrator Feedback:\n{orchestrator_feedback}")
 
             if feedback_parts:
                 feedback_content = "\n\n".join(feedback_parts)
-                feedback_content += "\n\nPlease continue your search based on this feedback."
+                feedback_content += "\n\nBitte suche basierend auf diesem Feedback weiter."
                 feedback_human_msg = HumanMessage(content=feedback_content)
                 messages.append(feedback_human_msg)
                 emit_agent_message(self.tracer, feedback_human_msg, "semantic_retrieval_agent")
@@ -324,24 +326,27 @@ Search for properties/classes that could model this relation.""")
             if needed_triple_description:
                 user_content += f"""
 
-## TARGETED SEARCH MODE - SPARQL agent needs a specific schema element
+## TARGETED SEARCH MODE - SPARQL Agent braucht spezifisches Schema
 
-The SPARQL agent has determined that a specific triple/schema element is missing:
+Der SPARQL Agent hat analysiert dass ein bestimmtes Tripel/Schema-Element fehlt:
 
 "{needed_triple_description}"
 
-Your task:
-1. Understand what the SPARQL agent semantically needs
-2. Search for properties/classes that could model this relation
-3. The target element may be named differently than expected
+Deine Aufgabe:
+1. Verstehe was der SPARQL Agent semantisch braucht
+2. Suche nach Properties/Classes die diese Beziehung modellieren koennten
+3. Das gesuchte Element koennte anders benannt sein als erwartet
 
-Example: if the agent needs "property to filter employees by country",
-search for: worksIn, employedIn, country, location, basedIn, etc.
+Beispiel: Wenn der Agent "Property um Mitarbeiter nach Land zu filtern" braucht,
+suche nach: worksIn, employedIn, country, location, basedIn, etc.
 """
             elif orchestrator_feedback:
-                user_content += f"\n\nIMPORTANT - hint from the orchestrator:\n{orchestrator_feedback}"
+                user_content += f"\n\nWICHTIG - Hinweis vom Orchestrator:\n{orchestrator_feedback}"
 
-            sys_msg = SystemMessage(content=SYSTEM_PROMPT)
+            from src.config import UNDER_INSTRUCTED, UNDERSPECIFIED_INSTRUCTION_RETRIEVAL
+            sys_msg = SystemMessage(
+                content=SYSTEM_PROMPT + (UNDERSPECIFIED_INSTRUCTION_RETRIEVAL if UNDER_INSTRUCTED else "")
+            )
             human_msg = HumanMessage(content=user_content)
             messages = [sys_msg, human_msg]
 
@@ -510,6 +515,12 @@ OPTION 2 - If you could NOT find relevant schema elements:
 Output exactly: UNANSWERABLE: [brief reason why the schema doesn't support this query]
 
 You CANNOT make more tool calls. Decide NOW based on what you already found."""
+                from src.config import UNDER_INSTRUCTED, UNDERSPECIFIED_FORCE_OPTION_RETRIEVAL
+                if UNDER_INSTRUCTED:
+                    force_message = force_message.replace(
+                        "\n\nYou CANNOT make more tool calls",
+                        UNDERSPECIFIED_FORCE_OPTION_RETRIEVAL + "\n\nYou CANNOT make more tool calls",
+                    )
 
                 force_human_msg = HumanMessage(content=force_message)
                 messages.append(force_human_msg)
@@ -535,6 +546,11 @@ You CANNOT make more tool calls. Decide NOW based on what you already found."""
 
             if not final_response:
                 # Still no response after forcing - give up on this attempt
+                break
+
+            # UNDER instructed ablation: an UNDERSPECIFIED stop is not a triple graph, skip validation
+            if final_response.strip().upper().startswith("UNDERSPECIFIED:"):
+                validated_schema = final_response
                 break
 
             # Validate the output graph
@@ -569,21 +585,30 @@ You CANNOT make more tool calls. Decide NOW based on what you already found."""
                     # Max attempts reached - use what we have
                     validated_schema = final_response
 
-        # Check if agent signaled UNANSWERABLE
+        # Check if agent signaled UNANSWERABLE (missing schema) or, with UNDER_INSTRUCTED=1,
+        # UNDERSPECIFIED (the question does not fix a criterion the answer depends on)
         is_unanswerable = False
         unanswerable_reason = ""
+        stop_kind = ""
         if validated_schema and validated_schema.strip().upper().startswith("UNANSWERABLE:"):
             is_unanswerable = True
+            stop_kind = "missing_schema"
             unanswerable_reason = validated_schema.split(":", 1)[1].strip() if ":" in validated_schema else "Schema does not support this query"
             validated_schema = ""  # Clear schema since it's not valid triples
+        elif validated_schema and validated_schema.strip().upper().startswith("UNDERSPECIFIED:"):
+            is_unanswerable = True
+            stop_kind = "underspecified"
+            unanswerable_reason = validated_schema.split(":", 1)[1].strip() if ":" in validated_schema else "Question does not fix a required criterion"
+            validated_schema = ""
 
         result = {
-            "status": "UNANSWERABLE" if is_unanswerable else "FOUND",
+            "status": ("UNDERSPECIFIED" if stop_kind == "underspecified" else "UNANSWERABLE") if is_unanswerable else "FOUND",
             "schema": validated_schema,
             "retrieved_triples": [validated_schema] if validated_schema else [],
             "mapping_files_used": list(mapping_files),
             "detected_endpoints": list(detected_endpoints),
             "unanswerable_reason": unanswerable_reason,
+            "stop_kind": stop_kind,
         }
 
         # Emit agent end event with timing

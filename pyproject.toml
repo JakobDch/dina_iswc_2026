@@ -1,7 +1,8 @@
 [project]
-name = "agentic-sparql-experiment"
+name = "dina-agent-experiment"
 version = "0.1.0"
 description = "Agentic Text-to-SPARQL experiment for ISWC 2026"
+authors = [{ name = "Jakob", email = "jakob@example.com" }]
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -50,9 +51,6 @@ dependencies = [
 
     # SQL parsing (for Mapping Optimizer SQL analysis)
     "sqlglot>=26.0.0",
-
-    # Schema extraction from R2RML mappings (scripts/rml_schema_extractor.py)
-    "morph-kgc>=2.6.0",
 ]
 
 [project.optional-dependencies]
@@ -85,3 +83,6 @@ python_version = "3.11"
 strict = true
 ignore_missing_imports = true
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

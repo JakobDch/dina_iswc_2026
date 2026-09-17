@@ -1,0 +1,12 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:BoreholeCasingAndLeakoffTest eno:LOTMudDensity xsd:decimal ;
+    eno:casingDepth xsd:decimal ;
+    eno:casingDiameter xsd:string ;
+    eno:casingType xsd:string ;
+    eno:dateSynchronized xsd:date ;
+    eno:boreholeHoleDepth xsd:decimal ;
+    eno:boreholeHoleDiameter xsd:string ;
+    eno:LOTForBorehole eno:PlatformBorehole ;
+    eno:LOTForBorehole eno:Borehole .

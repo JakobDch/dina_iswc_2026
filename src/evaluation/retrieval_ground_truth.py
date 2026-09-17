@@ -814,9 +814,12 @@ def build_schema_gt(
 
     result = RetrievalSchemaGT(query_id=query_id)
 
-    # Step 1: Extract paths and necessity info from SPARQL
+    # Step 1: Load schema (also used to type untyped variables below)
+    schema = get_combined_schema(dataset_ids)
+
+    # Step 2: Extract paths and necessity info from SPARQL
     try:
-        paths = extract_gt_paths(sparql)
+        paths = extract_gt_paths(sparql, schema=schema)
     except Exception as e:
         result.build_warnings.append(f"Failed to extract paths: {e}")
         return result
@@ -826,9 +829,6 @@ def build_schema_gt(
         result.build_warnings.append(f"Failed to parse SPARQL: {retrieval_gt.parse_error}")
         return result
 
-    # Step 2: Load schema
-    schema = get_combined_schema(dataset_ids)
-
     # Step 3: Build triples for each path
     seen_triples: set[tuple[str, str, str]] = set()
 
@@ -836,29 +836,30 @@ def build_schema_gt(
         # Determine necessity for this property
         necessity = retrieval_gt.properties.get(prop_uri, RetrievalNecessity.REQUIRED)
 
-        # Find candidate classes that have this property
+        # Find candidate classes that have this property.
+        #
+        # Where the domain is unknown, an earlier version expanded to every
+        # class carrying the property. On a large schema that is ruinous: NRG
+        # defines `designation` on 113 classes, so one untyped variable turned a
+        # four-triple ground truth into sixty, and an agent scored a hit for
+        # retrieving any of them — including classes that denote entirely
+        # different entities (a UnitFacility is not a Deposit; the two share no
+        # instances). The GT therefore leaves the domain open instead, which the
+        # metrics already handle: an open path only requires the property to
+        # appear, and no spurious class-level triples are invented.
+        candidate_classes: set[str] = set()
         if domain_class is not None:
-            # Typed variable: use the specific class
-            candidate_classes = set()
             if prop_uri in schema.class_properties.get(domain_class, set()):
                 candidate_classes.add(domain_class)
-            # Fallback: check if any class in schema has this property
-            if not candidate_classes:
-                all_with_prop = schema.property_domains.get(prop_uri, set())
-                candidate_classes = all_with_prop
-                if all_with_prop:
-                    result.build_warnings.append(
-                        f"Property {prop_uri} not on class {domain_class}, "
-                        f"using property_domains fallback"
-                    )
+            else:
+                result.build_warnings.append(
+                    f"Property {prop_uri} not declared on class {domain_class}; "
+                    f"leaving the domain open rather than expanding"
+                )
         else:
-            # Untyped variable: use all classes with this property
-            candidate_classes = schema.property_domains.get(prop_uri, set())
-
-        if not candidate_classes:
             result.build_warnings.append(
-                f"No class found for property {prop_uri} "
-                f"(domain_class={domain_class})"
+                f"Untyped subject for property {prop_uri}; "
+                f"leaving the domain open rather than expanding"
             )
 
         # Build triples from candidate classes

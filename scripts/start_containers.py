@@ -69,12 +69,12 @@ def main():
     # Step 1: Start MySQL
     if not args.skip_mysql:
         print("\n[1/4] Starting MySQL...")
-        if not start_container("experiment_mysql"):
+        if not start_container("dina_mysql"):
             print("ERROR: MySQL failed to start!")
             sys.exit(1)
 
         print("  Waiting for MySQL to be healthy...")
-        if not wait_for_healthy("experiment_mysql", timeout=120):
+        if not wait_for_healthy("dina_mysql", timeout=120):
             print("ERROR: MySQL did not become healthy!")
             sys.exit(1)
         print("  MySQL is healthy!")
@@ -84,7 +84,7 @@ def main():
     for slot in range(args.slots):
         print(f"\n  Slot {slot}:")
         for dataset in datasets_small:
-            name = f"ontop_{dataset}_slot{slot}"
+            name = f"dina_ontop_{dataset}_slot{slot}"
             start_container(name)
         time.sleep(2)
 
@@ -92,7 +92,7 @@ def main():
     print("\n[3/4] Waiting for small containers to be healthy...")
     for slot in range(args.slots):
         for dataset in datasets_small:
-            name = f"ontop_{dataset}_slot{slot}"
+            name = f"dina_ontop_{dataset}_slot{slot}"
             if not wait_for_healthy(name, timeout=180):
                 print(f"  WARNING: {name} not healthy after 180s")
 
@@ -101,7 +101,7 @@ def main():
     for slot in range(args.slots):
         print(f"\n  Slot {slot}:")
         for dataset in datasets_large:
-            name = f"ontop_{dataset}_slot{slot}"
+            name = f"dina_ontop_{dataset}_slot{slot}"
             start_container(name)
         time.sleep(5)
 
@@ -114,7 +114,7 @@ def main():
     healthy = 0
     total = 0
     for line in result.stdout.strip().split("\n"):
-        if "ontop_" in line or "experiment_mysql" in line:
+        if "dina_" in line:
             total += 1
             if "healthy" in line:
                 healthy += 1
@@ -124,7 +124,7 @@ def main():
     if healthy < total:
         print("\nContainers not yet healthy:")
         for line in result.stdout.strip().split("\n"):
-            if ("ontop_" in line or "experiment_mysql" in line) and "healthy" not in line:
+            if "dina_" in line and "healthy" not in line:
                 print(f"  {line}")
 
 

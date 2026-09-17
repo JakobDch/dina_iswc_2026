@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://example.org/ontology/transport#"
+     xml:base="http://example.org/ontology/transport"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+
+    <owl:Ontology rdf:about="http://example.org/ontology/transport"/>
+
+    <!-- Classes -->
+    <owl:Class rdf:about="http://example.org/ontology/transport#Agency"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#Stop"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#Line"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#Trip"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#StopEvent"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#Service"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#CalendarRule"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#CalendarDateRule"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#Shape"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#ShapePoint"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#Frequency"/>
+    <owl:Class rdf:about="http://example.org/ontology/transport#Feed"/>
+
+    <!-- Datatype Properties -->
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#abbreviation"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#fullTitle"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#code"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#timeZone"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#zone"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#reachTime"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#leaveTime"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#stopSequence"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#destination"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#direction"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#color"/>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/transport#textColor"/>
+
+    <!-- Object Properties -->
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/transport#agency"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/transport#line"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/transport#journey"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/transport#station"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/transport#service"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/transport#shape"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/transport#parentStation"/>
+
+</rdf:RDF>

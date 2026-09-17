@@ -1,7 +1,16 @@
 """Evaluation framework for experiments."""
 
-from .runner import ExperimentRunner
-from .metrics import calculate_metrics
+import importlib as _importlib
+
+def __getattr__(name):
+    """Lazy-load ExperimentRunner and metrics to avoid triggering langchain import chain."""
+    if name == "ExperimentRunner":
+        mod = _importlib.import_module(".runner", __name__)
+        return mod.ExperimentRunner
+    if name == "calculate_metrics":
+        mod = _importlib.import_module(".metrics", __name__)
+        return mod.calculate_metrics
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 from .sparql_metrics import (
     calculate_sparql_metrics,
     calculate_query_execution_success,

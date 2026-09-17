@@ -1,4 +1,4 @@
-"""Central configuration for the agentic experiment."""
+"""Central configuration for the DINA agent experiment."""
 
 from contextvars import ContextVar
 from pathlib import Path
@@ -612,3 +612,69 @@ def get_dataset_from_endpoint(endpoint_url: str) -> str | None:
 def get_settings() -> Settings:
     """Get application settings (cached)."""
     return Settings()
+
+# ---------------------------------------------------------------------------
+# OpenRouter provider pinning.
+# OpenRouter routes each request to a different host with different
+# quantization unless told otherwise (observed: Venice/AtlasCloud/DeepInfra fp4
+# for DeepSeek-V3.2). DeepSeek-V3.2 is released in FP8, so fp8 hosts are
+# faithful; Qwen3.5-27B is pinned to the official Alibaba endpoint (bf16 Novita
+# as fallback). Override with OPENROUTER_PROVIDER_JSON='{"<model>": {...}}'.
+# ---------------------------------------------------------------------------
+import json as _json
+import os as _os
+
+_OPENROUTER_PROVIDER_DEFAULTS: dict[str, dict] = {
+    "deepseek/deepseek-v3.2": {"order": ["Novita", "AtlasCloud", "GMICloud"],
+                               "allow_fallbacks": False, "quantizations": ["fp8"]},
+    "qwen/qwen3.5-27b": {"order": ["Alibaba", "Novita"], "allow_fallbacks": False},
+}
+
+
+def get_openrouter_kwargs(llm_model: str) -> dict:
+    """Extra ChatOpenAI kwargs for an ``openrouter/<model>`` id (provider pinning)."""
+    model = llm_model[len("openrouter/"):] if llm_model.startswith("openrouter/") else llm_model
+    prefs = dict(_OPENROUTER_PROVIDER_DEFAULTS)
+    override = _os.getenv("OPENROUTER_PROVIDER_JSON", "")
+    if override:
+        try:
+            prefs.update(_json.loads(override))
+        except Exception:
+            pass
+    if model in prefs and prefs[model]:
+        return {"extra_body": {"provider": prefs[model]}}
+    return {}
+
+
+# ---------------------------------------------------------------------------
+# UNDER "instructed" configuration (RQ3).
+# When UNDER_INSTRUCTED=1 the retrieval agents and the SPARQL agent get an explicit
+# UNDERSPECIFIED output option appended to their system prompts. Default: off, so
+# every other experiment keeps byte-identical prompts.
+# ---------------------------------------------------------------------------
+UNDER_INSTRUCTED: bool = _os.getenv("UNDER_INSTRUCTED", "0") == "1"
+
+UNDERSPECIFIED_INSTRUCTION_RETRIEVAL = """
+
+## Underspecified questions
+If the question cannot be answered with any query without first asking the user for missing
+information, do not invent that information. Output exactly:
+`UNDERSPECIFIED: <what you would have to ask the user, in one sentence>`"""
+
+UNDERSPECIFIED_FORCE_OPTION_RETRIEVAL = """
+
+OPTION 3 - If the question cannot be answered with any query without first asking the user for missing information:
+Do not invent that information. Output exactly: UNDERSPECIFIED: [what you would have to ask the user, in one sentence]"""
+
+UNDERSPECIFIED_INSTRUCTION_SPARQL = """
+
+## Underspecified questions
+If the question cannot be answered with any query without first asking the user for missing
+information, do not invent that information. Output exactly:
+```json
+{
+  "status": "UNDERSPECIFIED",
+  "missing_criterion": "<what you would have to ask the user, in one sentence>",
+  "reasoning": "Why no query is possible without this information"
+}
+```"""

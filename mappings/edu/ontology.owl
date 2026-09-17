@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://example.org/ontology/education#"
+     xml:base="http://example.org/ontology/education"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+
+    <owl:Ontology rdf:about="http://example.org/ontology/education"/>
+
+    <!-- Classes -->
+    <owl:Class rdf:about="http://example.org/ontology/education#Academy"/>
+    <owl:Class rdf:about="http://example.org/ontology/education#Division"/>
+    <owl:Class rdf:about="http://example.org/ontology/education#ResearchGroup"/>
+    <owl:Class rdf:about="http://example.org/ontology/education#Publication"/>
+    <owl:Class rdf:about="http://example.org/ontology/education#Course"/>
+    <owl:Class rdf:about="http://example.org/ontology/education#AdvancedModule">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Course"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#BasicModule">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Course"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#Person"/>
+    <owl:Class rdf:about="http://example.org/ontology/education#Learner">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Person"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#DoctoralCandidate">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Learner"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#BachelorCandidate">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Learner"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#Faculty">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Person"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#Educator">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Faculty"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#SeniorScholar">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Educator"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#MidCareerScholar">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Educator"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#JuniorScholar">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Educator"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#Lecturer">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Faculty"/>
+    </owl:Class>
+    <owl:Class rdf:about="http://example.org/ontology/education#Tutor">
+        <rdfs:subClassOf rdf:resource="http://example.org/ontology/education#Person"/>
+    </owl:Class>
+
+    <!-- Datatype Properties -->
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/education#label">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/education#emailAddress">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/education#telephone">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/education#title">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/education#abstract">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="http://example.org/ontology/education#researchInterest">
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+    <!-- Object Properties -->
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#belongsTo"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#partOf"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#employedAt"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#headOf"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#instructorOf"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#tutorOf"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#enrolledIn"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#mentor"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#author"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#doctoralDegreeFrom"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#masterDegreeFrom"/>
+    <owl:ObjectProperty rdf:about="http://example.org/ontology/education#undergraduateDegreeFrom"/>
+
+</rdf:RDF>

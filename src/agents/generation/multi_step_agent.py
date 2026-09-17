@@ -26,6 +26,7 @@ from langchain_anthropic import ChatAnthropic
 from langchain_ollama import ChatOllama
 
 from src.config import get_settings
+from src.config import get_openrouter_kwargs
 from src.tools.multi_step_tools import MULTI_STEP_TOOLS, get_cached_results, get_all_cached_results, clear_results_cache
 from src.tracing import TraceEvent, TraceEventType, get_tracer
 from src.tracing.llm_callback import create_llm_callback
@@ -216,16 +217,17 @@ class MultiStepAgent:
                 api_key=os.getenv("OPENROUTER_API_KEY", ""),
                 base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
                 temperature=0.1,
+                **get_openrouter_kwargs(llm_model),
             )
         elif llm_model.startswith("openai/"):
             self.llm = ChatOpenAI(
                 model=llm_model,
-                api_key=os.getenv("LOCAL_PROXY_API_KEY", ""),
-                base_url=os.getenv("LOCAL_PROXY_BASE_URL", "http://localhost:4000/v1"),
+                api_key=os.getenv("KI4BUW_API_KEY", ""),
+                base_url=os.getenv("KI4BUW_BASE_URL", "https://llm.ki4buw.de/v1"),
                 temperature=0.1,
             )
         elif is_ollama:
-            ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+            ollama_base_url = os.getenv("REMOTE_OLLAMA_LLAMA31_70B_BASE_URL", "http://localhost:11434")
             self.llm = ChatOllama(
                 model=llm_model,
                 base_url=ollama_base_url,

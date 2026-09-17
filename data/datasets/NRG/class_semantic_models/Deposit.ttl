@@ -8,8 +8,8 @@ eno:Deposit eno:condition xsd:string ;
     eno:designation xsd:string ;
     eno:registryId xsd:integer ;
     eno:activeDepositOperator eno:Company ;
-    eno:currentFieldOwner eno:ExtractionPermit ;
-    eno:discoveryWellbore eno:Borehole ;
-    eno:discoveryWellbore eno:PlatformBorehole ;
-    eno:discoveryWellbore eno:InitialWellbore ;
-    eno:discoveryWellbore eno:WildcatWellbore .
+    eno:currentDepositOwner eno:ExtractionPermit ;
+    eno:discoveryBorehole eno:Borehole ;
+    eno:discoveryBorehole eno:PlatformBorehole ;
+    eno:discoveryBorehole eno:InitialBorehole ;
+    eno:discoveryBorehole eno:WildcatBorehole .

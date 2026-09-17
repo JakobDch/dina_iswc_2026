@@ -1,18 +1,29 @@
 # =============================================================================
-# Docker Compose for Experiment Setup (SMALL datasets only)
+# Docker Compose for Experiment Setup with Small and Large Datasets
 # =============================================================================
 #
-# LARGE dataset variants were removed – mapping optimization will be a separate paper.
+# This configuration provides separate endpoints for small and large datasets
+# to test Multi-Step Query optimization.
 #
 # Port mapping:
-#   - EDU-small:  8080
-#   - TRN-small:  8081
-#   - NRG-small:  8082
-#   - BSBM:       8083
-#   - LCA:        8085
+#   Small datasets (for correctness testing):
+#     - EDU-small:  8080   (~100k triples, 1 university)
+#     - TRN-small:  8081   (~2k StopTimes, Metro only)
+#     - NRG-small:   8082   (original NRG data)
+#
+#   Large datasets (for Multi-Step Query testing):
+#     - EDU-large:  8090   (~1M+ triples, 10+ universities) [PLACEHOLDER]
+#     - TRN-large:  8091   (~3.5M StopTimes, all data)
+#     - NRG-large:   8092   (VIG-scaled) [PLACEHOLDER]
+#
+#   Unchanged datasets:
+#     - BSBM:        8083   (original)
+#     - LCA:         8085   (original)
 #
 # Usage:
-#   docker compose up -d
+#   docker compose -f docker-compose.experiment.yml up -d
+#
+# Note: First run will take time to load ~600MB of TRN large data.
 # =============================================================================
 
 # ============================================================
@@ -41,27 +52,41 @@ x-ontop-small: &ontop-small
     JAVA_TOOL_OPTIONS: "-Xmx768m -Xms512m"
     ONTOP_DEV_MODE: "true"
 
+x-ontop-large: &ontop-large
+  <<: *ontop-base
+  deploy:
+    resources:
+      limits:
+        cpus: '4.0'
+        memory: 16G
+  environment: &env-large
+    JAVA_TOOL_OPTIONS: "-Xmx12g -XX:+UseG1GC"
+    ONTOP_DEV_MODE: "true"
+
 services:
   # ============================================================
   # DATABASE - MySQL with experiment data
   # ============================================================
   mysql:
     image: mysql:8.0
-    container_name: experiment_mysql
+    container_name: dina_mysql
     environment:
-      MYSQL_ROOT_PASSWORD: d1n4_exp_2026
+      MYSQL_ROOT_PASSWORD: root
     ports:
-      - "127.0.0.1:3306:3306"
+      - "3306:3306"
     volumes:
       # Load experiment SQL files directly (MySQL only reads files, not subdirs)
       - ./data/sql/experiment/01_trn_small.sql:/docker-entrypoint-initdb.d/01_trn_small.sql
+      - ./data/sql/experiment/02_trn_large.sql:/docker-entrypoint-initdb.d/02_trn_large.sql
       - ./data/sql/experiment/03_edu_small.sql:/docker-entrypoint-initdb.d/03_edu_small.sql
+      - ./data/sql/experiment/04_edu_large.sql:/docker-entrypoint-initdb.d/04_edu_large.sql
       - ./data/sql/experiment/05_nrg_small.sql:/docker-entrypoint-initdb.d/05_nrg_small.sql
+      - ./data/sql/experiment/06_nrg_large.sql:/docker-entrypoint-initdb.d/06_nrg_large.sql
       # Also load BSBM and LCA
       - ./data/sql/07_bsbm_benchmark.sql:/docker-entrypoint-initdb.d/07_bsbm.sql
       - ./data/sql/08_lca_schema.sql:/docker-entrypoint-initdb.d/08_lca_schema.sql
       - ./data/sql/08b_lca_data.sql:/docker-entrypoint-initdb.d/08b_lca_data.sql
-      - mysql_experiment_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     command: >
       --innodb-buffer-pool-size=4G
       --innodb-buffer-pool-instances=4
@@ -86,7 +111,7 @@ services:
           cpus: '6.0'
           memory: 8G
     healthcheck:
-      test: ["CMD", "mysql", "-uroot", "-pd1n4_exp_2026", "-e", "SELECT 1"]
+      test: ["CMD", "mysql", "-uroot", "-proot", "-e", "SELECT 1"]
       interval: 10s
       timeout: 10s
       retries: 60
@@ -99,7 +124,7 @@ services:
   # EDU Small - Port 8080
   ontop-edu-small:
     <<: *ontop-small
-    container_name: ontop_edu_small
+    container_name: dina_ontop_edu_small
     ports:
       - "8080:8080"
     volumes:
@@ -117,7 +142,7 @@ services:
   # TRN Small - Port 8081
   ontop-trn-small:
     <<: *ontop-small
-    container_name: ontop_trn_small
+    container_name: dina_ontop_trn_small
     ports:
       - "8081:8080"
     volumes:
@@ -135,7 +160,7 @@ services:
   # NRG Small - Port 8082
   ontop-nrg-small:
     <<: *ontop-small
-    container_name: ontop_nrg_small
+    container_name: dina_ontop_nrg_small
     ports:
       - "8082:8080"
     volumes:
@@ -151,13 +176,71 @@ services:
     command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
 
   # ============================================================
+  # LARGE DATASET ENDPOINTS
+  # ============================================================
+
+  # EDU Large - Port 8090 (PLACEHOLDER - needs UBA data)
+  ontop-edu-large:
+    <<: *ontop-large
+    container_name: dina_ontop_edu_large
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./mappings/edu-large:/opt/ontop/input
+    environment:
+      <<: *env-large
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # TRN Large - Port 8091
+  ontop-trn-large:
+    <<: *ontop-large
+    container_name: dina_ontop_trn_large
+    ports:
+      - "8091:8080"
+    volumes:
+      - ./mappings/trn-large:/opt/ontop/input
+    environment:
+      <<: *env-large
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # NRG Large - Port 8092 (PLACEHOLDER - needs VIG data)
+  ontop-nrg-large:
+    <<: *ontop-large
+    container_name: dina_ontop_nrg_large
+    ports:
+      - "8092:8080"
+    volumes:
+      - ./mappings/nrg-large:/opt/ontop/input
+    environment:
+      <<: *env-large
+      ONTOP_MAPPING_FILE: /opt/ontop/input/mapping.ttl
+      ONTOP_ONTOLOGY_FILE: /opt/ontop/input/ontology.owl
+      ONTOP_PROPERTIES_FILE: /opt/ontop/input/ontop.properties
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["ontop", "endpoint", "--portal=/opt/ontop/input/portal.toml", "--dev"]
+
+  # ============================================================
   # UNCHANGED DATASETS
   # ============================================================
 
   # BSBM - Port 8083
   ontop-bsbm:
     <<: *ontop-small
-    container_name: ontop_bsbm
+    container_name: dina_ontop_bsbm
     ports:
       - "8083:8080"
     volumes:
@@ -175,7 +258,7 @@ services:
   # LCA - Port 8085
   ontop-lca:
     <<: *ontop-small
-    container_name: ontop_lca
+    container_name: dina_ontop_lca
     ports:
       - "8085:8080"
     volumes:
@@ -192,3 +275,4 @@ services:
 
 volumes:
   mysql_experiment_data:
+  mysql_data:

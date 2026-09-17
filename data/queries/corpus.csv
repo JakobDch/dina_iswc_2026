@@ -1,0 +1,57 @@
+id,condition,dataset,base_id,n_readings,question,substitution
+BASE01,BASE,EDU,,2,Show me 5000 examples of learners enrolled in courses instructed by educators employed at their own division.,
+BASE03,BASE,LCA,,1,List activities with their input and output flows.,
+BASE04,BASE,TRN,,4,Show me 1000 examples of which lines have stop events at which stations.,
+BASE05,BASE,EDU,,2,"How many learners in each division are enrolled in courses, and what courses are they enrolled in?",
+BASE06,BASE,TRN,,4,What is the total number of stop events and average stop events per journey for each line?,
+BASE08,BASE,TRN,,10,Show the top 10 stations with the most journeys.,
+BASE09,BASE,EDU,,1,Which educators who instruct advanced modules have no mentees?,
+BASE10,BASE,BSBM,,2,What are the cheapest and most expensive products?,
+BASE11,BASE,NRG,,2,Which deposits have more than 50 million in extracted crude total?,
+BASE12,BASE,EDU,,2,List all basic modules and advanced modules with their instructors and division.,
+BASE13,BASE,NRG,,2,Show the condition and active deposit operator of the TROLL deposit.,
+BASE14,BASE,EDU,,2,Show courses instructed at University0.,
+BASE16,BASE,NRG,,2,Which deposits have Statoil as their active deposit operator?,
+BASE18,BASE,NRG,,2,Find boreholes with a total drill depth greater than 3000 meters.,
+BASE19,BASE,TRN,,4,Show journeys with leave times between 00:00:00 and 01:00:00.,
+BASE20,BASE,NRG,,4,"For each active deposit operator, list all the deposits they operate.",
+BASE21,BASE,NRG,,2,Which deposits are operated by Det norske oljeselskap ASA?,
+SYN01,SYN,EDU,BASE01,2,Show me 5000 cases of students taking classes taught by professors from their own department.,"Synonym variant of BASE01: learners->students, courses->classes, enrolled in->taking, instructed by->taught by, educators->professors, division->department, examples->cases"
+SYN03,SYN,LCA,BASE03,1,Show unit processes with their exchanges.,"Synonym variant of BASE03: list->show, activities->unit processes, flows->exchanges (LCA terminology)"
+SYN04,SYN,TRN,BASE04,4,Show me 1000 cases of which transit routes pass through which platforms.,"Synonym variant of BASE04: lines->transit routes, stop events at->pass through, stations->platforms, examples->cases (paraphrase)"
+SYN05,SYN,EDU,BASE05,2,"Per department, how many people are registered for classes, and which ones?","Synonym variant of BASE05: learners->people (hypernym), division->department, enrolled in->registered for, courses->classes, restructured"
+SYN06,SYN,TRN,BASE06,4,"For each transit route, how many times does it halt altogether and what is the mean per trip?","Synonym variant of BASE06: line->transit route, stop events->halt (circumlocution), journey->trip, total->altogether, average->mean"
+SYN08,SYN,TRN,BASE08,10,Which 10 places in the transit network are served by the most trips?,"Synonym variant of BASE08: stations->places (hypernym), journeys->trips, 'transit network' for domain context, 'served by' circumlocution"
+SYN09,SYN,EDU,BASE09,1,Which faculty teaching upper-level classes have nobody under their supervision?,"Synonym variant of BASE09: educators->faculty (hypernym), instruct->teaching, advanced modules->upper-level classes, mentees->nobody under supervision (circumlocution)"
+SYN10,SYN,BSBM,BASE10,2,Which items are the least expensive and the costliest?,"Synonym variant of BASE10: what->which, products->items, cheapest->least expensive, most expensive->costliest"
+SYN11,SYN,NRG,BASE11,2,Where has more than 50000000 in oil been pumped out altogether?,"Synonym variant of BASE11: deposits->where (implicit), extracted crude->oil pumped out (informal+passive), 50 million->50000000 (numeric), total->altogether"
+SYN12,SYN,EDU,BASE12,2,Show every undergraduate and graduate class alongside who teaches it and which department it falls under.,"Synonym variant of BASE12: list->show, basic modules->undergraduate class, advanced modules->graduate class, instructors->who teaches it (circumlocution), division->department, restructured"
+SYN13,SYN,NRG,BASE13,2,Show the status and managing company of the Troll oil field.,"Synonym variant of BASE13: condition->status, active deposit operator->managing company, deposit->oil field, TROLL->Troll"
+SYN14,SYN,EDU,BASE14,2,Show classes offered at Uni 0.,"Synonym variant of BASE14: courses->classes, instructed->offered, University0->Uni 0"
+SYN16,SYN,NRG,BASE16,2,Which fields are currently operated by Equinor?,"Synonym variant of BASE16: deposits->fields, active deposit operator->currently operated by, Statoil->Equinor"
+SYN18,SYN,NRG,BASE18,2,Which drill holes go deeper than 3 kilometers?,"Synonym variant of BASE18: boreholes->drill holes, total drill depth greater than->go deeper than, 3000 meters->3 kilometers (unit change)"
+SYN19,SYN,TRN,BASE19,4,Show transit trips departing between midnight and 1 AM.,"Synonym variant of BASE19: journeys->transit trips, leave times->departing, 00:00:00->midnight, 01:00:00->1 AM (time format change)"
+SYN20,SYN,NRG,BASE20,4,"For each oil company, which production sites do they currently manage?","Synonym variant of BASE20: active deposit operator->oil company, deposits->production sites, operate->currently manage, list->which (circumlocution)"
+SYN21,SYN,NRG,BASE21,4,Which fields does Aker BP currently manage?,"Synonym variant of BASE21: deposits->fields, operated->currently manage, Det norske oljeselskap ASA->Aker BP Readings 3 and 4 added on 2026-09-15: Aker BP was formed in 2016 by merging Det norske oljeselskap ASA with BP Norge AS. The data still records both predecessors as active operators (Det norske: 2 fields, BP Norge: 6 fields) and lists 'Aker BP ASA' as a company without operated fields, so the fields of both predecessors are an admissible answer to the SYN wording. Added after inspecting the stage-2 runs; BASE21 keeps the Det norske-only readings."
+TYPO01,TYPO,EDU,BASE01,2,Show me 5000 exampels of learnres enrolld in coureses instructd by educatros employd at their own divison.,"Typo variant of BASE01: examples->exampels, learners->learnres, enrolled->enrolld, courses->coureses, instructed->instructd, educators->educatros, employed->employd, division->divison"
+TYPO03,TYPO,LCA,BASE03,1,List activites with thier input and outptu flows.,"Typo variant of BASE03: activities->activites, their->thier, output->outptu"
+TYPO04,TYPO,TRN,BASE04,4,Show me 1000 exampels of wich lines have stopp events at wich statinos.,"Typo variant of BASE04: examples->exampels, which->wich (x2), stop->stopp, stations->statinos"
+TYPO05,TYPO,EDU,BASE05,2,"How manny learnres in each divison are enrolld in coureses, and what coureses are they enrolld in?","Typo variant of BASE05: many->manny, learners->learnres, division->divison, enrolled->enrolld (x2), courses->coureses (x2)"
+TYPO06,TYPO,TRN,BASE06,4,What is the totel number of stopp events and averge stopp events per journy for each lin?,"Typo variant of BASE06: total->totel, stop->stopp (x2), average->averge, journey->journy, line->lin"
+TYPO08,TYPO,TRN,BASE08,10,Show the top 10 statinos with the mostt journyes.,"Typo variant of BASE08: stations->statinos, most->mostt, journeys->journyes"
+TYPO09,TYPO,EDU,BASE09,1,Which educatros who instrcut advnaced moduels have no menteees?,"Typo variant of BASE09: educators->educatros, instruct->instrcut, advanced->advnaced, modules->moduels, mentees->menteees"
+TYPO10,TYPO,BSBM,BASE10,2,What are the cheepest and most expensiv prodcuts?,"Typo variant of BASE10: cheapest->cheepest, expensive->expensiv, products->prodcuts"
+TYPO11,TYPO,NRG,BASE11,2,Which deposists have more than fivty million in extrcated crude totel?,"Typo variant of BASE11: deposits->deposists, fifty->fivty, extracted->extrcated, total->totel"
+TYPO12,TYPO,EDU,BASE12,2,List all baisc moduels and advnaced moduels with their instructros and divison.,"Typo variant of BASE12: basic->baisc, modules->moduels (x2), advanced->advnaced, instructors->instructros, division->divison"
+TYPO13,TYPO,NRG,BASE13,2,Show the conditon and actve deposit opertor of the TROL deposite.,"Typo variant of BASE13: condition->conditon, active->actve, operator->opertor, TROLL->TROL, deposit->deposite"
+TYPO14,TYPO,EDU,BASE14,2,Show coureses instructd at Univeristy0.,"Typo variant of BASE14: courses->coureses, instructed->instructd, University->Univeristy"
+TYPO16,TYPO,NRG,BASE16,2,Which deposists have Statoil as their actve deposit opertor?,"Typo variant of BASE16: deposits->deposists, active->actve, operator->opertor"
+TYPO18,TYPO,NRG,BASE18,2,Find boreholse with a totel drill deptth greater than 3000 meeters.,"Typo variant of BASE18: boreholes->boreholse, total->totel, depth->deptth, meters->meeters"
+TYPO19,TYPO,TRN,BASE19,4,Show journyes with leav tiems between 00:00:000 and 01:00:000.,"Typo variant of BASE19: journeys->journyes, leave->leav, times->tiems, 00:00:00->00:00:000, 01:00:00->01:00:000"
+TYPO20,TYPO,NRG,BASE20,4,"For each actve deposit opertor, lsit all the deposists they oprate.","Typo variant of BASE20: active->actve, operator->opertor, list->lsit, deposits->deposists, operate->oprate"
+TYPO21,TYPO,NRG,BASE21,2,Which deposists are operatd by Det norske oljeslskap ASA?,"Typo variant of BASE21: deposits->deposists, operated->operatd, oljeselskap->oljeslskap"
+UNDER01,UNDER,BSBM,,2,Show top products.,
+UNDER03,UNDER,NRG,,2,Get recent production data.,
+UNDER04,UNDER,EDU,,2,Find large departments.,
+UNDER06,UNDER,LCA,,1,Find significant emissions.,
+UNDER08,UNDER,BSBM,,2,Show affordable products.,

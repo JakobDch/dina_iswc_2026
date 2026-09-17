@@ -32,7 +32,7 @@ class QueryMetadata(BaseModel):
 
     # Identification
     query_id: str = Field(..., description="Query ID (e.g., 'BASE01', 'SYN01')")
-    query_set: Literal["BASE", "SYN", "TYPO", "UNDER", "CROSS"] = Field(
+    query_set: Literal["BASE", "SYN", "TYPO", "LARGE", "UNDER", "CROSS"] = Field(
         ..., description="Query set category"
     )
     query_text: str = Field(..., description="Natural language query")
@@ -446,6 +446,7 @@ class TraceSummary(BaseModel):
     # Status
     success: bool = Field(default=False, description="Whether run succeeded")
     is_unanswerable: bool = Field(default=False, description="Marked as unanswerable")
+    stop_kind: str = Field(default="", description="missing_schema | underspecified | generation_exhausted | ''")
 
     # Generated output preview (first 5 results only)
     final_sparql: str | None = Field(default=None, description="Final SPARQL query")
@@ -537,6 +538,10 @@ class ExperimentRunTrace(BaseModel):
         default=False, description="Query marked as unanswerable"
     )
     unanswerable_reason: str = Field(default="", description="Why query is unanswerable")
+    stop_kind: str = Field(
+        default="",
+        description="Why the run stopped without a query: '' | missing_schema | underspecified | generation_exhausted",
+    )
     error_message: str | None = Field(
         default=None, description="Error message if run failed"
     )
@@ -657,6 +662,7 @@ class ExperimentRunTrace(BaseModel):
             # Status
             success=self.success,
             is_unanswerable=self.is_unanswerable,
+            stop_kind=self.stop_kind,
             # Output preview
             final_sparql=self.final_sparql,
             results_sample=results_sample,

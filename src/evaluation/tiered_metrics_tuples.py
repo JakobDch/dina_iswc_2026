@@ -73,19 +73,29 @@ used OPTIONAL for, so we generate all possible variants:
 
 STEP 4: Calculate Metrics for Each Variant
 ------------------------------------------
-For each GT variant, calculate Precision and Recall against LLM results.
+For each GT variant, calculate Precision, Recall, and F1 against LLM results.
 
-STEP 5: Select Best Metrics
----------------------------
-- Final Recall = max(Recall across all variants)
-- Final Precision = max(Precision across all variants)
-- This finds the "best interpretation" of the LLM's answer automatically
+STEP 5: Hierarchical Variant Selection
+--------------------------------------
+Within a single GT alternative (across NULL-variants):
+  - Pick the variant with maximum data F1.
+  - Tie-break by recall, then by precision.
+  - Recall and precision are then taken from the SAME selected variant
+    (no per-metric independent maximisation).
 
-This ensures we don't penalize LLMs for choosing different valid approaches.
+Across alternative GT SPARQL queries (in evaluate_adaptive_ground_truth):
+  - Pick the alternative with maximum SCHEMA F1.
+  - Tie-break by data F1.
+  - This schema-first criterion prevents the evaluation from rewarding an
+    alternative that artificially inflates its data F1 by dropping aligned
+    LLM columns: a GT alternative that drops a column passes Stage 1 only
+    with a lower schema precision, so a competing alternative that retains
+    the column wins selection even if its data F1 is slightly lower.
 ================================================================================
 """
 
 import logging
+import unicodedata
 from dataclasses import dataclass, field
 from itertools import combinations
 from typing import Any
@@ -343,6 +353,7 @@ def normalize_value(value: Any) -> str:
 
     - Extracts value from SPARQL JSON format {"type": "uri", "value": "..."}
     - Strips whitespace
+    - Applies Unicode NFC normalization (ensures composed form for accented chars)
     - Converts to lowercase for case-insensitive comparison
     """
     if isinstance(value, dict):
@@ -350,7 +361,7 @@ def normalize_value(value: Any) -> str:
     else:
         raw_value = str(value)
 
-    return raw_value.strip().lower()
+    return unicodedata.normalize("NFC", raw_value.strip()).lower()
 
 
 # Trivial values that should not count as meaningful overlap for column detection
@@ -588,6 +599,131 @@ def calculate_metrics_tuple_match(
     return recall, precision, tp, fp, fn
 
 
+def parse_ranked_query_metadata(gt_sparql: str | None) -> tuple[bool, str | None, int | None, str]:
+    """Detect if a SPARQL query is a ranked Top-N query and extract metadata.
+
+    A ranked query has both ORDER BY and LIMIT. Returns the ORDER BY variable
+    name and LIMIT value for tie-tolerant matching.
+
+    Args:
+        gt_sparql: The GT SPARQL query string
+
+    Returns:
+        (is_ranked, order_by_var, limit_n, direction)
+        - is_ranked: True if query has both ORDER BY and LIMIT
+        - order_by_var: Variable name (without ?) in the primary ORDER BY expression
+        - limit_n: Integer LIMIT value
+        - direction: "DESC" or "ASC"
+    """
+    if not gt_sparql:
+        return False, None, None, "DESC"
+    import re
+    # Find ORDER BY clause (first primary ordering)
+    # Match: ORDER BY [DESC|ASC] ( ?var ) or ORDER BY ?var
+    order_match = re.search(
+        r"ORDER\s+BY\s+(?:(DESC|ASC)\s*)?\(?\s*\??(\w+)", gt_sparql, re.IGNORECASE
+    )
+    limit_match = re.search(r"LIMIT\s+(\d+)", gt_sparql, re.IGNORECASE)
+    if not order_match or not limit_match:
+        return False, None, None, "DESC"
+    direction = (order_match.group(1) or "ASC").upper()
+    order_var = order_match.group(2)
+    limit_n = int(limit_match.group(1))
+    return True, order_var, limit_n, direction
+
+
+def calculate_metrics_tie_tolerant(
+    gt_tuples: set[tuple[str, ...]],
+    llm_tuples: set[tuple[str, ...]],
+    score_col_idx: int,
+    direction: str = "DESC",
+) -> tuple[float, float, int, int, int]:
+    """Tie-tolerant P/R/F1 for ranked Top-N queries.
+
+    When ORDER BY + LIMIT produces ties at the boundary, LLM and GT may pick
+    different rows from the tied pool. This function accepts any LLM tuple
+    with a score equal to the GT boundary score as a valid tied match,
+    substituting for any tied GT tuple.
+
+    Args:
+        gt_tuples: Projected GT top-N tuples
+        llm_tuples: Projected LLM top-N tuples
+        score_col_idx: Index of the ORDER BY column in the projected tuples
+        direction: "DESC" (boundary = min score) or "ASC" (boundary = max score)
+
+    Returns:
+        (recall, precision, tp, fp, fn) with tie tolerance applied.
+    """
+    if not gt_tuples:
+        return 0.0, 0.0, 0, 0, 0
+
+    def _to_number(v):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return None
+
+    # Extract scores from GT
+    gt_scores = [_to_number(t[score_col_idx]) for t in gt_tuples if score_col_idx < len(t)]
+    gt_scores = [s for s in gt_scores if s is not None]
+    if not gt_scores:
+        # Fallback to exact match if scores aren't numeric
+        return calculate_metrics_tuple_match(gt_tuples, llm_tuples)
+
+    boundary_score = min(gt_scores) if direction == "DESC" else max(gt_scores)
+
+    def _is_strict(score):
+        return (score > boundary_score) if direction == "DESC" else (score < boundary_score)
+
+    # Partition GT by score
+    strict_gt: set = set()
+    tied_gt: set = set()
+    for t in gt_tuples:
+        s = _to_number(t[score_col_idx]) if score_col_idx < len(t) else None
+        if s is None:
+            continue
+        if s == boundary_score:
+            tied_gt.add(t)
+        elif _is_strict(s):
+            strict_gt.add(t)
+
+    # Partition LLM by score
+    llm_strict: set = set()
+    llm_boundary: set = set()
+    llm_other: set = set()
+    for t in llm_tuples:
+        s = _to_number(t[score_col_idx]) if score_col_idx < len(t) else None
+        if s is None:
+            llm_other.add(t)
+        elif s == boundary_score:
+            llm_boundary.add(t)
+        elif _is_strict(s):
+            llm_strict.add(t)
+        else:
+            llm_other.add(t)
+
+    # Strict: exact match required
+    tp_strict = len(strict_gt & llm_strict)
+    missed_strict = len(strict_gt - llm_strict)
+    fp_strict = len(llm_strict - strict_gt)
+
+    # Tied: any LLM tuple at boundary fills a tied slot (up to |tied_gt|)
+    tied_slots = len(tied_gt)
+    tp_tied = min(tied_slots, len(llm_boundary))
+    fp_tied = max(0, len(llm_boundary) - tied_slots)
+    unfilled_tied = tied_slots - tp_tied
+
+    # Other LLM tuples (below/above boundary): FP
+    fp_other = len(llm_other)
+
+    tp = tp_strict + tp_tied
+    fp = fp_strict + fp_tied + fp_other
+    fn = missed_strict + unfilled_tied
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    return recall, precision, tp, fp, fn
+
+
 # =============================================================================
 # Schema Metrics Functions (SELECT clause evaluation)
 # =============================================================================
@@ -813,6 +949,55 @@ def calculate_schema_metrics(
 # =============================================================================
 
 
+def calculate_schema_metrics_from_mapping(
+    column_mapping: list[tuple[int, str]],
+    n_llm_columns: int,
+    gt_column_levels: list[RelevanceLevel],
+    gt_semantic_concepts: list[str | None] | None = None,
+) -> tuple[float, float, int, int, int, int]:
+    """Schema metrics on the 1:1 column pairing produced by
+    _column_mapping_by_value_overlap (the pairing the data metrics use).
+
+    Precision = paired LLM columns / all LLM columns.
+    Recall    = covered REQUIRED (PREFERRED) concepts / all REQUIRED concepts,
+                where a concept is covered if at least one GT column carrying it
+                is paired. GT columns with the same non-empty semantic_concept
+                form one concept; columns without a concept label count singly.
+
+    Returns the same tuple as calculate_schema_metrics:
+    (schema_recall, schema_precision, expected_count, matched_count,
+     llm_columns, llm_matched)
+    """
+    paired_gt = {gt_idx for gt_idx, _ in column_mapping}
+    paired_llm = {llm_name for _, llm_name in column_mapping}
+
+    concept_groups: dict[str, list[int]] = {}
+    for col_idx, level in enumerate(gt_column_levels):
+        if level not in (RelevanceLevel.PREFERRED,):
+            continue
+        concept = None
+        if gt_semantic_concepts and col_idx < len(gt_semantic_concepts):
+            concept = gt_semantic_concepts[col_idx]
+        key = concept if concept else f"__col_{col_idx}__"
+        concept_groups.setdefault(key, []).append(col_idx)
+
+    total_concepts = len(concept_groups)
+    satisfied = sum(
+        1 for cols in concept_groups.values() if any(i in paired_gt for i in cols)
+    )
+    schema_recall = satisfied / total_concepts if total_concepts > 0 else 1.0
+    schema_precision = len(paired_llm) / n_llm_columns if n_llm_columns > 0 else 0.0
+
+    return (
+        schema_recall,
+        schema_precision,
+        total_concepts,
+        satisfied,
+        n_llm_columns,
+        len(paired_llm),
+    )
+
+
 def detect_active_levels(
     llm_values: set[str],
     essential_values: set[str],
@@ -951,12 +1136,16 @@ def _column_mapping_by_value_overlap(
             # STEP 2: If overlap is numeric or temporal, check property compatibility
             if overlap_type in ("numeric", "temporal"):
                 # Both columns are the same numeric/temporal type
-                # → Check if they use the SAME SPARQL property
+                # → Check if they share a SPARQL property.
+                # 2026-09-15: compare the full predicate sets. The previous code took "the first"
+                # element of a set (next(iter(...))), which depends on per-process hash
+                # randomisation, so aggregate columns with several inner predicates (COUNT/AVG
+                # over stop events) flipped between matched and blocked between evaluation runs.
 
-                gt_property: str | None = None
-                llm_property: str | None = None
+                gt_props: set[str] = set()
+                llm_props: set[str] = set()
 
-                # Extract GT property
+                # Extract GT properties
                 if gt_sigs and gt_col_names and gt_idx < len(gt_col_names):
                     gt_var_name = gt_col_names[gt_idx].lstrip("?")
                     gt_sig: ColumnSignature | None = gt_sigs.get(gt_var_name)
@@ -970,10 +1159,9 @@ def _column_mapping_by_value_overlap(
                         )
 
                         if predicates:
-                            # Take first property (most columns have exactly one)
-                            gt_property = next(iter(predicates))
+                            gt_props = set(predicates)
 
-                # Extract LLM property
+                # Extract LLM properties
                 if llm_sigs:
                     llm_var_name = llm_name.lstrip("?")
                     llm_sig: ColumnSignature | None = llm_sigs.get(llm_var_name)
@@ -987,11 +1175,14 @@ def _column_mapping_by_value_overlap(
                         )
 
                         if predicates:
-                            # Take first property (most columns have exactly one)
-                            llm_property = next(iter(predicates))
+                            llm_props = set(predicates)
 
-                # Check compatibility: properties must be identical
-                if not are_properties_compatible(gt_property, llm_property):
+                # Check compatibility: fail-open when either side is unknown (as before),
+                # otherwise the columns must share at least one property.
+                gt_property = sorted(gt_props)[0] if gt_props else None
+                llm_property = sorted(llm_props)[0] if llm_props else None
+                compatible = not gt_props or not llm_props or bool(gt_props & llm_props)
+                if not compatible:
                     # Different properties → BLOCK this match
                     # Do NOT add to candidates
                     logger.debug(
@@ -1012,6 +1203,31 @@ def _column_mapping_by_value_overlap(
             mapping.append((gt_idx, llm_name))
             used_gt.add(gt_idx)
             used_llm.add(llm_name)
+
+    # Optional audit (EVAL_MATCHING_CHECK=<logfile>): compare the greedy pairing with the
+    # maximum-weight bipartite matching over the same candidates and log any difference.
+    # Does not change the returned mapping.
+    import os as _os
+    _log = _os.environ.get("EVAL_MATCHING_CHECK")
+    if _log and candidates:
+        try:
+            import numpy as _np
+            from scipy.optimize import linear_sum_assignment as _lsa
+            gts = sorted({c[0] for c in candidates})
+            llms = sorted({c[1] for c in candidates})
+            w = _np.zeros((len(gts), len(llms)))
+            for g, l, o in candidates:
+                w[gts.index(g), llms.index(l)] = o
+            ri, ci = _lsa(-w)
+            optimal = {(gts[r], llms[c]) for r, c in zip(ri, ci) if w[r, c] > 0}
+            greedy = set(mapping)
+            opt_w = sum(w[gts.index(g), llms.index(l)] for g, l in optimal)
+            gr_w = sum(w[gts.index(g), llms.index(l)] for g, l in greedy)
+            with open(_log, "a", encoding="utf-8") as fh:
+                fh.write(f"{'DIFF' if greedy != optimal else 'SAME'}\t{gr_w:.0f}\t{opt_w:.0f}\t{sorted(greedy)}\t{sorted(optimal)}\n")
+        except Exception as _e:  # pragma: no cover - audit only
+            with open(_log, "a", encoding="utf-8") as fh:
+                fh.write(f"ERROR\t{_e}\n")
     return mapping
 
 
@@ -1031,10 +1247,16 @@ def calculate_adaptive_metrics(
     use_signature_matching: bool = False,
     dataset_id: str | None = None,
 ) -> AdaptiveMetricsResult:
-    """Calculate adaptive metrics across all GT variants.
+    """Calculate adaptive data metrics over the NULL-variants of a single GT alternative.
 
-    This is the main function for the new adaptive evaluation algorithm.
-    It implements all 5 steps of the algorithm.
+    Implements steps 1-5 of the adaptive evaluation (see module docstring).
+    Selection across NULL-variants is by max data F1, tie-broken by recall then
+    precision. Recall and precision are taken from the SAME selected variant
+    (no per-metric independent maximisation).
+
+    Schema F1 is constant across NULL-variants of the same alternative; the
+    cross-alternative schema-first selection happens in
+    `evaluate_adaptive_ground_truth`.
 
     Args:
         llm_results: LLM SPARQL results (raw format)
@@ -1052,7 +1274,7 @@ def calculate_adaptive_metrics(
         dataset_id: Dataset ID for schema loading (enables datatype property lookup).
 
     Returns:
-        AdaptiveMetricsResult with best metrics across all variants
+        AdaptiveMetricsResult with metrics from the selected NULL-variant.
     """
     from src.evaluation.column_signatures import extract_column_signatures
 
@@ -1155,61 +1377,92 @@ def calculate_adaptive_metrics(
 
     result.llm_row_count = len(llm_tuples)
 
+    # Detect ranked (Top-N) queries for tie-tolerant matching
+    is_ranked, order_var, _limit_n, direction = parse_ranked_query_metadata(gt_sparql)
+    score_col_idx: int | None = None
+    if is_ranked and order_var and gt_col_names:
+        # Find the ORDER BY var in the original GT column names
+        try:
+            orig_idx = gt_col_names.index(order_var)
+        except ValueError:
+            orig_idx = -1
+        # Map to projected index if the column was included in the column_mapping
+        if orig_idx >= 0 and result.column_mapping:
+            matched_indices = [gt_idx for gt_idx, _ in result.column_mapping]
+            if orig_idx in matched_indices:
+                score_col_idx = matched_indices.index(orig_idx)
+
     # STEP 3: Generate all GT variants (for NULL handling)
     variants = generate_null_variants(gt_tuples, columns_with_nulls)
     result.variants_evaluated = len(variants)
 
-    # STEP 4: Calculate metrics for each variant using standard TP/FP/FN
+    # STEPS 4 & 5: Compute (recall, precision, f1) per NULL-variant and select the
+    # single variant that maximises data F1. Tie-break by recall, then precision.
+    #
+    # Note: schema F1 is constant across NULL-variants of the same GT alternative
+    # (NULL-variants only filter rows, never change column alignment). The
+    # cross-alternative schema-first selection happens in
+    # `evaluate_adaptive_ground_truth`; within a single alternative, picking
+    # max-F1 over NULL-variants is equivalent to schema-first-then-data because
+    # all variants here share the same schema F1.
     best_recall = 0.0
     best_precision = 0.0
-    best_recall_variant = ""
-    best_recall_gt_size = 0
-    best_precision_variant = ""
-    best_precision_gt_size = 0
+    best_f1 = -1.0  # so the first valid variant always wins
+    best_variant_desc = ""
+    best_gt_size = 0
 
     for gt_variant, variant_desc in variants:
         if not gt_variant:
             continue
 
-        recall, precision, tp, fp, fn = calculate_metrics_tuple_match(
-            gt_variant, llm_tuples
-        )
+        if is_ranked and score_col_idx is not None:
+            recall, precision, tp, fp, fn = calculate_metrics_tie_tolerant(
+                gt_variant, llm_tuples, score_col_idx, direction
+            )
+        else:
+            recall, precision, tp, fp, fn = calculate_metrics_tuple_match(
+                gt_variant, llm_tuples
+            )
+
+        # F1 of this specific variant (recall and precision come from the same
+        # variant - no per-metric independent maximisation).
+        f1 = (2 * recall * precision / (recall + precision)) if (recall + precision) > 0 else 0.0
 
         variant_result = {
             "variant": variant_desc,
             "gt_size": len(gt_variant),
             "recall": recall,
             "precision": precision,
+            "f1": f1,
             "tp": tp,
             "fp": fp,
             "fn": fn,
         }
         result.variant_results.append(variant_result)
 
-        # STEP 5: Track best metrics
-        if recall > best_recall:
+        is_better = (
+            f1 > best_f1
+            or (f1 == best_f1 and recall > best_recall)
+            or (f1 == best_f1 and recall == best_recall and precision > best_precision)
+        )
+        if is_better:
+            best_f1 = f1
             best_recall = recall
-            best_recall_variant = variant_desc
-            best_recall_gt_size = len(gt_variant)
-
-        if precision > best_precision:
             best_precision = precision
-            best_precision_variant = variant_desc
-            best_precision_gt_size = len(gt_variant)
+            best_variant_desc = variant_desc
+            best_gt_size = len(gt_variant)
 
-    # Set final best metrics
+    # Set final metrics from the single selected variant
     result.best_recall = best_recall
     result.best_precision = best_precision
-    result.best_recall_variant = best_recall_variant
-    result.best_recall_gt_size = best_recall_gt_size
-    result.best_precision_variant = best_precision_variant
-    result.best_precision_gt_size = best_precision_gt_size
-
-    # Calculate F1 from best recall and precision
-    if best_recall + best_precision > 0:
-        result.best_f1 = 2 * best_recall * best_precision / (best_recall + best_precision)
-    else:
-        result.best_f1 = 0.0
+    result.best_f1 = best_f1 if best_f1 >= 0 else 0.0
+    # Both *_variant fields point to the same NULL-variant under joint selection;
+    # the duplication is kept for backwards compatibility with consumers that
+    # read either field independently.
+    result.best_recall_variant = best_variant_desc
+    result.best_recall_gt_size = best_gt_size
+    result.best_precision_variant = best_variant_desc
+    result.best_precision_gt_size = best_gt_size
 
     return result
 
@@ -1330,7 +1583,7 @@ def _evaluate_single_query(
     gt_sparql = ground_truth.sparql_queries[query_index] if query_index < len(ground_truth.sparql_queries) else None
 
     # Get dataset ID for schema loading
-    dataset_id = getattr(ground_truth, "dataset_id", None)
+    dataset_id = getattr(ground_truth, "dataset", None)
 
     # Calculate adaptive metrics (with datatype checking if SPARQL + dataset available)
     result = calculate_adaptive_metrics(
@@ -1362,8 +1615,8 @@ def _evaluate_single_query(
         result.schema_recall, result.schema_precision,
         result.schema_expected_count, result.schema_matched_count,
         result.schema_llm_columns, result.schema_llm_matched,
-    ) = calculate_schema_metrics(
-        llm_col_vals, gt_col_vals, gt_col_levels, gt_col_is_measurement, gt_semantic_concepts
+    ) = calculate_schema_metrics_from_mapping(
+        result.column_mapping, len(llm_col_vals), gt_col_levels, gt_semantic_concepts
     )
 
     if result.schema_recall + result.schema_precision > 0:
@@ -1386,9 +1639,18 @@ def evaluate_adaptive_ground_truth(
 
     This is the main entry point for the adaptive evaluation algorithm.
     It handles the full pipeline:
-    1. Execute all GT queries and find the one with best F1 score
-    2. For prefix-match queries, calculate detected_limit
-    3. Return best metrics across all GT query variants
+    1. Execute all GT alternative SPARQL queries and pick one via hierarchical
+       selection: maximise schema recall first, break ties by data F1, then by
+       schema precision.
+    2. For prefix-match queries, calculate detected_limit on the selected
+       alternative.
+    3. Return the metrics of the selected alternative.
+
+    The hierarchical schema-first criterion prevents the evaluation from
+    rewarding an alternative that artificially inflates its data F1 by dropping
+    aligned LLM columns: a GT alternative that drops a column passes Stage 1
+    only with a lower schema precision, so a competing alternative that retains
+    the column wins selection even if its data F1 is slightly lower.
 
     Args:
         llm_results: LLM SPARQL results (raw format)
@@ -1399,15 +1661,19 @@ def evaluate_adaptive_ground_truth(
         use_signature_matching: Unused, kept for API compatibility (always False).
 
     Returns:
-        AdaptiveMetricsResult with best metrics across all GT queries
+        AdaptiveMetricsResult with metrics from the selected GT alternative.
     """
     if not ground_truth.sparql_queries:
         return AdaptiveMetricsResult()
 
-    # Evaluate against all alternative queries and pick the best one
+    # Hierarchical variant selection across alternatives:
+    # (1) maximise schema recall (which reading's required concepts the system
+    # covers), (2) tie-break by data F1, (3) then by schema precision. Precision
+    # does not decide the reading: whether a surplus system column finds a
+    # partner depends only on which optional columns a reading happens to list.
     best_result: AdaptiveMetricsResult | None = None
-    best_f1 = -1.0
-    best_query_idx = 0  # Track which query gave best result (for prefix matching)
+    best_key = (-1.0, -1.0, -1.0)
+    best_query_idx = 0  # Track which alternative was selected (for prefix matching)
 
     for query_index in range(len(ground_truth.sparql_queries)):
         result = _evaluate_single_query(
@@ -1419,9 +1685,9 @@ def evaluate_adaptive_ground_truth(
             llm_sparql=llm_sparql,
         )
 
-        # Track best result by F1 score
-        if result.best_f1 > best_f1:
-            best_f1 = result.best_f1
+        key = (result.schema_recall, result.best_f1, result.schema_precision)
+        if key > best_key:
+            best_key = key
             best_result = result
             best_query_idx = query_index
 
@@ -1491,6 +1757,7 @@ __all__ = [
     "generate_null_variants",
     # Schema metrics
     "calculate_schema_metrics",
+    "calculate_schema_metrics_from_mapping",
     "extract_llm_column_values",
     # Value/row extraction utilities
     "extract_result_values",

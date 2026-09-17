@@ -1,0 +1,29 @@
+title = "Education SPARQL Endpoint"
+
+[endpoint]
+address = "0.0.0.0:8080"
+
+[[tabGroups]]
+name = "Example Queries"
+
+[[tabGroups.tabs]]
+name = "Graduate Students"
+query = """
+PREFIX eduo: <http://example.org/ontology/education#>
+SELECT ?student ?name WHERE {
+    ?student a eduo:DoctoralCandidate .
+    ?student eduo:label ?name .
+}
+LIMIT 10
+"""
+
+[[tabGroups.tabs]]
+name = "Students with Advisors"
+query = """
+PREFIX eduo: <http://example.org/ontology/education#>
+SELECT ?student ?advisor WHERE {
+    ?student a eduo:DoctoralCandidate .
+    ?student eduo:mentor ?advisor .
+}
+LIMIT 10
+"""

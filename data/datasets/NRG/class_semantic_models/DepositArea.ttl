@@ -1,0 +1,6 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:DepositArea eno:isGeometryOfFeature eno:Deposit ;
+    eno:isGeometryOfFeature eno:Discovery ;
+    eno:resourcesIncludedInDiscovery eno:Discovery .

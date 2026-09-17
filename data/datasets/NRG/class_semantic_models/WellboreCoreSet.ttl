@@ -1,8 +1,0 @@
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix eno: <http://example.org/ontology/energy#> .
-
-eno:WellboreCoreSet eno:coresTotalNo xsd:integer ;
-    eno:coresForWellbore eno:InitialWellbore ;
-    eno:coresForWellbore eno:Borehole ;
-    eno:coresForWellbore eno:PlatformBorehole ;
-    eno:member eno:WellboreCore .

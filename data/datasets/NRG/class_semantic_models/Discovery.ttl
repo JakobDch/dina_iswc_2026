@@ -2,7 +2,7 @@
 @prefix eno: <http://example.org/ontology/energy#> .
 
 eno:Discovery eno:condition xsd:string ;
-    eno:dateIncludedInField xsd:date ;
+    eno:dateIncludedInDeposit xsd:date ;
     eno:dateSynchronized xsd:date ;
     eno:dateUpdated xsd:date ;
     eno:dateUpdatedMax xsd:date ;
@@ -10,8 +10,8 @@ eno:Discovery eno:condition xsd:string ;
     eno:discoveryYear xsd:integer ;
     eno:hydrocarbonType xsd:string ;
     eno:registryId xsd:integer ;
-    eno:discoveryWellbore eno:InitialWellbore ;
-    eno:discoveryWellbore eno:Borehole ;
-    eno:discoveryWellbore eno:PlatformBorehole ;
-    eno:discoveryWellbore eno:ExplorationWellbore ;
-    eno:includedInField eno:Deposit .
+    eno:discoveryBorehole eno:InitialBorehole ;
+    eno:discoveryBorehole eno:Borehole ;
+    eno:discoveryBorehole eno:PlatformBorehole ;
+    eno:discoveryBorehole eno:ExplorationBorehole ;
+    eno:includedInDeposit eno:Deposit .

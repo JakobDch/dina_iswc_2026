@@ -8,7 +8,7 @@ Usage:
     from src.concurrency.slot_manager import get_slot_manager
     from src.config import slot_context
 
-    slot_manager = get_slot_manager(num_slots=5)
+    slot_manager = get_slot_manager(num_slots=4)
     await slot_manager.initialize()
 
     async with slot_manager.acquire_slot() as slot_id:
@@ -39,7 +39,7 @@ class SlotManager:
     queries when it modifies mappings and restarts containers.
     """
 
-    def __init__(self, num_slots: int = 5):
+    def __init__(self, num_slots: int = 4):
         """Initialize the slot manager.
 
         Args:
@@ -114,7 +114,7 @@ class SlotManager:
 _slot_manager: SlotManager | None = None
 
 
-def get_slot_manager(num_slots: int = 5) -> SlotManager:
+def get_slot_manager(num_slots: int = 4) -> SlotManager:
     """Get or create the global slot manager.
 
     The slot manager is created once and reused. The num_slots parameter

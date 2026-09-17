@@ -28,7 +28,7 @@ FAISS_INDEX_DIRECTORY_NAME = "vector_store_semantic_models"
 
 # Central settings and environment variables
 ONTOP_SPARQL_URL = os.getenv("ONTOP_SPARQL_URL", "http://127.0.0.1:8080/sparql")
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL")
+REMOTE_OLLAMA_LLAMA31_70B_BASE_URL = os.getenv("REMOTE_OLLAMA_LLAMA31_70B_BASE_URL")
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
@@ -77,7 +77,7 @@ LLM_PROFILES = {
     "ollama_remote_llama33_70b": {
         "provider": "ollama",
         "model": "llama3.3:70b",
-        "base_url": OLLAMA_BASE_URL,
+        "base_url": REMOTE_OLLAMA_LLAMA31_70B_BASE_URL,
         "requires_api_key": False,
         "context_window": 128000,
         "retrieval_token_budget": 50000,
@@ -85,7 +85,7 @@ LLM_PROFILES = {
     "ollama_remote_llama31_70b": {
         "provider": "ollama",
         "model": "llama3.1:70b",
-        "base_url": OLLAMA_BASE_URL,
+        "base_url": REMOTE_OLLAMA_LLAMA31_70B_BASE_URL,
         "requires_api_key": False,
         "context_window": 128000,
         "retrieval_token_budget": 50000,
@@ -93,7 +93,7 @@ LLM_PROFILES = {
     "ollama_remote_qwen35_27b": {
         "provider": "ollama",
         "model": "qwen3.5:27b",
-        "base_url": OLLAMA_BASE_URL,
+        "base_url": REMOTE_OLLAMA_LLAMA31_70B_BASE_URL,
         "requires_api_key": False,
         "context_window": 32000,
         "retrieval_token_budget": 15000,
@@ -101,7 +101,7 @@ LLM_PROFILES = {
     "ollama_remote_deepseek_r1_32b": {
         "provider": "ollama",
         "model": "deepseek-r1:32b",
-        "base_url": OLLAMA_BASE_URL,
+        "base_url": REMOTE_OLLAMA_LLAMA31_70B_BASE_URL,
         "requires_api_key": False,
         "context_window": 64000,
         "retrieval_token_budget": 25000,
@@ -143,7 +143,7 @@ class AppSettings(BaseSettings):
     ontop_sparql_url: str = ONTOP_SPARQL_URL
     ontop_timeout_seconds: int = 15  # Default timeout for OnTop operations
     # LLM API keys
-    ollama_base_url: Optional[str] = OLLAMA_BASE_URL
+    remote_ollama_llama31_70b_base_url: Optional[str] = REMOTE_OLLAMA_LLAMA31_70B_BASE_URL
     deepseek_api_key: Optional[str] = DEEPSEEK_API_KEY
     openai_api_key: Optional[str] = OPENAI_API_KEY
     anthropic_api_key: Optional[str] = ANTHROPIC_API_KEY

@@ -771,7 +771,7 @@ def get_table_schema(
             FROM COLUMNS
             WHERE TABLE_SCHEMA = %s
             AND UPPER(TABLE_NAME) = UPPER(%s)
-            ORDER BY ORAgentic SPARQLL_POSITION
+            ORDER BY ORDINAL_POSITION
         """, (db_name, table_name))
         columns_raw = cursor.fetchall()
 
@@ -801,7 +801,7 @@ def get_table_schema(
             WHERE TABLE_SCHEMA = %s
             AND UPPER(TABLE_NAME) = UPPER(%s)
             AND CONSTRAINT_NAME = 'PRIMARY'
-            ORDER BY ORAgentic SPARQLL_POSITION
+            ORDER BY ORDINAL_POSITION
         """, (db_name, table_name))
         pk_columns = [row[0].lower() for row in cursor.fetchall()]
 
@@ -820,7 +820,7 @@ def get_table_schema(
             AND UPPER(kcu.TABLE_NAME) = UPPER(%s)
             AND tc.CONSTRAINT_TYPE = 'FOREIGN KEY'
             AND kcu.REFERENCED_TABLE_NAME IS NOT NULL
-            ORDER BY kcu.ORAgentic SPARQLL_POSITION
+            ORDER BY kcu.ORDINAL_POSITION
         """, (db_name, table_name))
         fk_rows = cursor.fetchall()
 
@@ -1422,11 +1422,11 @@ def restart_ontop_container(
         base_name = full_dataset.replace('-', '_')
 
         if USE_SLOT_CONTAINERS and slot_id is not None:
-            # Slot-specific container: ontop_{dataset}_slot{N}
-            container_name = f"ontop_{base_name}_slot{slot_id}"
+            # Slot-specific container: dina_ontop_{dataset}_slot{N}
+            container_name = f"dina_ontop_{base_name}_slot{slot_id}"
         else:
-            # Shared container: ontop_{dataset}
-            container_name = f"ontop_{base_name}"
+            # Shared container: dina_ontop_{dataset}
+            container_name = f"dina_ontop_{base_name}"
 
         try:
             container = client.containers.get(container_name)
@@ -1560,9 +1560,9 @@ def check_ontop_container_health(dataset: str) -> dict:
         base_name = full_dataset.replace('-', '_')
 
         if USE_SLOT_CONTAINERS and slot_id is not None:
-            container_name = f"ontop_{base_name}_slot{slot_id}"
+            container_name = f"dina_ontop_{base_name}_slot{slot_id}"
         else:
-            container_name = f"ontop_{base_name}"
+            container_name = f"dina_ontop_{base_name}"
 
         try:
             container = client.containers.get(container_name)

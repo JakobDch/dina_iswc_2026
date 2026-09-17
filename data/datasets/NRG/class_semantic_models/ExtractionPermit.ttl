@@ -2,7 +2,7 @@
 @prefix eno: <http://example.org/ontology/energy#> .
 
 eno:ExtractionPermit eno:currentAreaSize xsd:decimal ;
-    eno:currentStatus xsd:string ;
+    eno:currentCondition xsd:string ;
     eno:dateLicenceGranted xsd:date ;
     eno:dateLicenceValidTo xsd:date ;
     eno:dateSynchronized xsd:date ;

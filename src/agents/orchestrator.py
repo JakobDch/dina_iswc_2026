@@ -324,11 +324,11 @@ Fix the error and generate a corrected query with status="PENDING".
 class OrchestratorState(TypedDict):
     """State for the orchestrator graph.
 
-    Architecture: isolated agent memory
+    Architektur: Isolierte Agent-Memory
     ===================================
-    - Each agent has its own conversation with the orchestrator
-    - The orchestrator sees both conversations but not the internal tool calls
-    - Agents only see their own conversation + their own actions
+    - Jeder Agent hat seine eigene Konversation mit dem Orchestrator
+    - Der Orchestrator sieht beide Konversationen, aber nicht die internen Tool-Calls
+    - Agenten sehen nur ihre eigene Konversation + eigene Aktionen
     """
 
     # Input
@@ -351,21 +351,21 @@ class OrchestratorState(TypedDict):
     generation_agent_memory: AgentMemory   # SPARQL Generation Agent's conversation
     orchestrator_agent_memory: AgentMemory # Orchestrator's conversation
 
-    # Approved triples: vetted by the orchestrator and forwarded to generation
+    # Approved triples: Vom Orchestrator geprüft und an Generation weitergegeben
     approved_triples: list[str]
 
     # ==========================================================================
-    # SHARED CONTEXT (written by agents, read by others)
+    # SHARED CONTEXT (von Agenten geschrieben, von anderen gelesen)
     # ==========================================================================
 
-    # Raw retrieved triples (Retrieval agent writes, orchestrator reads)
+    # Raw retrieved triples (Retrieval Agent schreibt, Orchestrator liest)
     retrieved_triples: list[str]
     mapping_files_used: list[str]
 
     # Detected endpoints from schema retrieval (Dataspace mode)
     detected_endpoints: list[str]
 
-    # Generated queries (written by the generation agent)
+    # Generated queries (Generation Agent schreibt)
     generated_queries: list[str]
     query_reasonings: list[str]
     target_endpoints: list[str]
@@ -378,6 +378,9 @@ class OrchestratorState(TypedDict):
     # Unanswerable status
     is_unanswerable: bool
     unanswerable_reason: str
+    # Why the run stopped without a query: "" | "missing_schema" | "underspecified" |
+    # "generation_exhausted" (UNDER instructed ablation needs the distinction)
+    stop_kind: str
 
     # Retrieval strategy (fixed for fair comparison)
     current_retrieval_strategy: Literal["grep", "semantic"]
@@ -456,6 +459,7 @@ def create_initial_state(
         selection_reasoning="",
         is_unanswerable=False,
         unanswerable_reason="",
+        stop_kind="",
         current_retrieval_strategy=initial_strategy,
         messages=[],
         error_messages=[],
@@ -554,10 +558,12 @@ async def retrieval_node(state: OrchestratorState) -> dict:
         detected_endpoints = result.get("detected_endpoints", [])
         retrieval_status = result.get("status", "FOUND")
 
-        # Check if Retrieval Agent signaled UNANSWERABLE
-        if retrieval_status == "UNANSWERABLE":
+        # Check if Retrieval Agent signaled UNANSWERABLE (missing schema) or UNDERSPECIFIED
+        # (UNDER instructed ablation: question does not fix a required criterion)
+        if retrieval_status in ("UNANSWERABLE", "UNDERSPECIFIED"):
+            stop_kind = result.get("stop_kind") or ("underspecified" if retrieval_status == "UNDERSPECIFIED" else "missing_schema")
             agent_reason = result.get("unanswerable_reason", "Schema does not support this query")
-            logger.info(f"Retrieval Agent: UNANSWERABLE - {agent_reason}")
+            logger.info(f"Retrieval Agent: {retrieval_status} ({stop_kind}) - {agent_reason}")
             tracer.emit(
                 TraceEvent(
                     event_type=TraceEventType.ORCHESTRATOR_DECISION,
@@ -566,6 +572,7 @@ async def retrieval_node(state: OrchestratorState) -> dict:
                         "next_phase": "unanswerable",
                         "reasoning": "Retrieval Agent determined query is unanswerable",
                         "agent_reason": agent_reason,
+                        "stop_kind": stop_kind,
                     },
                 )
             )
@@ -578,6 +585,7 @@ async def retrieval_node(state: OrchestratorState) -> dict:
                 "retrieval_agent_memory": updated_retrieval_messages,
                 "is_unanswerable": True,
                 "unanswerable_reason": agent_reason,
+                "stop_kind": stop_kind,
                 "needs_targeted_retrieval": False,
                 "needed_triple_description": "",
             }
@@ -594,6 +602,7 @@ async def retrieval_node(state: OrchestratorState) -> dict:
         # Rule-based decision
         retrieval_attempts = len([m for m in updated_retrieval_messages if m.get("type") == "ai"])
 
+        stop_kind = ""
         if actual_triple_count > 0:
             # Schema found - proceed to generation
             next_phase = "generation"
@@ -604,6 +613,7 @@ async def retrieval_node(state: OrchestratorState) -> dict:
             # No schema found after multiple attempts - unanswerable
             next_phase = "unanswerable"
             is_unanswerable = True
+            stop_kind = "missing_schema"
             unanswerable_reason = f"After {retrieval_attempts} retrieval attempts, no relevant schema was found."
             logger.info(f"Query unanswerable: {retrieval_attempts} attempts, no schema found")
         else:
@@ -666,6 +676,7 @@ async def retrieval_node(state: OrchestratorState) -> dict:
             "retrieval_agent_memory": updated_retrieval_messages,
             "is_unanswerable": is_unanswerable,
             "unanswerable_reason": unanswerable_reason,
+            "stop_kind": stop_kind,
             # Reset targeted retrieval flags
             "needs_targeted_retrieval": False,
             "needed_triple_description": "",
@@ -716,6 +727,7 @@ async def generation_node(state: OrchestratorState) -> dict:
             "current_phase": "complete",
             "is_unanswerable": True,
             "unanswerable_reason": f"Could not generate valid query after {sparql_iteration} attempts",
+            "stop_kind": "generation_exhausted",
             "iteration_count": state["iteration_count"] + 1,
         }
 
@@ -768,6 +780,32 @@ async def generation_node(state: OrchestratorState) -> dict:
             needed_triple = result.get("needed_triple", "")
 
             logger.info(f"SPARQL Agent status={status}, query_length={len(query)}")
+
+            # Handle UNDERSPECIFIED (UNDER instructed ablation): stop without a query
+            if status == "UNDERSPECIFIED":
+                missing_criterion = result.get("missing_criterion", "") or reasoning or "Question does not fix a required criterion"
+                logger.info(f"SPARQL Agent: UNDERSPECIFIED - {missing_criterion}")
+                tracer.emit(
+                    TraceEvent(
+                        event_type=TraceEventType.ORCHESTRATOR_DECISION,
+                        phase="generation",
+                        data={
+                            "next_phase": "unanswerable",
+                            "sparql_agent_decision": "UNDERSPECIFIED",
+                            "missing_criterion": missing_criterion,
+                            "stop_kind": "underspecified",
+                        },
+                    )
+                )
+                return {
+                    "current_phase": "unanswerable",
+                    "is_unanswerable": True,
+                    "unanswerable_reason": missing_criterion,
+                    "stop_kind": "underspecified",
+                    "sparql_iteration_count": sparql_iteration + 1,
+                    "iteration_count": state["iteration_count"] + 1,
+                    "generation_agent_memory": current_messages,
+                }
 
             # Handle NEED_TRIPLE - need more schema
             if status == "NEED_TRIPLE":
@@ -1145,7 +1183,11 @@ Try a simpler query structure."""
 
             # Unknown status
             logger.warning(f"Unknown status from agent: {status}")
-            execution_feedback = f"Error: Unknown status '{status}'. Valid statuses are: PENDING, DONE, NEED_TRIPLE"
+            from src.config import UNDER_INSTRUCTED
+            execution_feedback = (
+                f"Error: Unknown status '{status}'. Valid statuses are: PENDING, DONE, NEED_TRIPLE"
+                + (", UNDERSPECIFIED" if UNDER_INSTRUCTED else "")
+            )
 
         # Max inner iterations reached
         logger.warning(f"Max inner iterations ({max_inner_iterations}) reached in generation phase")
@@ -1356,5 +1398,6 @@ async def run_agentic_pipeline(
         "detected_endpoints": state.get("detected_endpoints", []),
         "is_unanswerable": state.get("is_unanswerable", False),
         "unanswerable_reason": state.get("unanswerable_reason", ""),
+        "stop_kind": state.get("stop_kind", ""),
         "mapping_optimization_applied": state.get("mapping_optimization_applied", False),
     }

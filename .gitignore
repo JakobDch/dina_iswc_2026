@@ -1,69 +1,44 @@
 # Python
 __pycache__/
 *.py[cod]
-*.class
-*.so
-.Python
 *.egg-info/
-dist/
 build/
+dist/
+.pytest_cache/
 
-# Virtual environments
+# Environments and editors
 .venv/
 venv/
-env/
-ENV/
-
-# IDEs / editors
 .vscode/
 .idea/
-.claude/
 *.swp
-*.swo
-*~
 
-# Temp directories
-temp/
-tmp/
-tmp_*/
-.pytest_cache/
-.benchmarks/
-
-# Backup files
-*_backup.*
-*_ORIGINAL.*
-*.bak
-
-# Caches
-.cache/
-*.cache
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Secrets — NEVER commit these
+# Secrets
 .env
-.env.local
-.env.*.local
 tools/chess/.env
 
-# Logs
+# Logs and temporary files
 *.log
 logs/
+tmp/
+tmp_*/
 
-# Large data and intermediate artefacts
-data/cache/
+# Raw datasets, database dumps and caches (see README, "Datasets")
+data/cache/*
+!data/cache/ground_truth_full.json
+!data/cache/embeddings/
+data/cache/embeddings/*
+!data/cache/embeddings/_global/
 data/datasets/*/*.sql
 data/datasets/*/*.csv
 data/datasets/*/*.zip
 data/datasets/*/*.gz
-data/ground_truth/large_*
 *.db
 *.sqlite
 *.sqlite3
+tools/chess/data/dev/dev_databases/
+tools/chess/results/
 
-# CHESS — keep only the small JSON summaries; ignore raw run logs / data
-tools/chess/data/dev/
-tools/chess/results/**/logs/
-tools/chess/results/**/_backup_failed_runs/
+# Raw traces are distributed as a separate archive (see README, "Experiment traces")
+results/experiments/*/traces/*.json
+results/analysis/log/

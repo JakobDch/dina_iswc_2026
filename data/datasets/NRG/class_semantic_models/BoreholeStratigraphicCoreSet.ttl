@@ -1,0 +1,11 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:BoreholeStratigraphicCoreSet eno:coresTotalLength xsd:decimal ;
+    eno:dateSynchronized xsd:date ;
+    eno:coreForBorehole eno:ExplorationBorehole ;
+    eno:coreForBorehole eno:PlatformBorehole ;
+    eno:coreForBorehole eno:InitialBorehole ;
+    eno:coreForBorehole eno:Borehole ;
+    eno:coreForBorehole eno:AppraisalBorehole ;
+    eno:inLithostratigraphicUnit eno:LithostratigraphicUnit .

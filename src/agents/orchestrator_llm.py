@@ -73,6 +73,7 @@ def deserialize_messages(data: list[dict]) -> list[BaseMessage]:
 from rdflib import Graph
 
 from src.config import get_settings, normalize_content
+from src.config import get_openrouter_kwargs
 from src.tools.sparql_tools import execute_sparql, get_endpoints_for_query, QUERY_TIMEOUT
 from src.tracing import TraceEvent, TraceEventType, get_tracer
 from src.tracing.llm_callback import create_llm_callback
@@ -349,53 +350,53 @@ Choose this ONLY when ALL of these conditions are met:
 }}"""
 
 
-EVALUATION_SYSTEM_PROMPT = """You are a SPARQL Query Evaluator and decision maker.
+EVALUATION_SYSTEM_PROMPT = """Du bist ein SPARQL Query Evaluator und Entscheider.
 
-You receive ALL information about a SPARQL query:
-- The original user question
-- The generated query
-- Execution result (success/error)
-- Semantic validation (errors + suggestions, if any)
-- The top 5 result rows (if the query succeeded)
+Du bekommst ALLE Informationen zu einer SPARQL Query:
+- Die urspruengliche Benutzerfrage
+- Die generierte Query
+- Execution Result (Erfolg/Fehler)
+- Semantic Validation (Fehler + Suggestions falls vorhanden)
+- Die Top 5 Ergebnisse (falls Query erfolgreich)
 
-## Your task
+## Deine Aufgabe
 
-Analyse EVERYTHING and decide for yourself what the best next step is:
+Analysiere ALLES und entscheide selbst was der beste naechste Schritt ist:
 
 ### APPROVED
-The query runs correctly AND the results answer the question.
-IMPORTANT: empty results (0 rows) are NEVER APPROVED!
+Die Query funktioniert korrekt UND die Ergebnisse beantworten die Frage.
+WICHTIG: Leere Ergebnisse (0 Resultate) sind NIEMALS APPROVED!
 
-Example: user asks "Find students with advisors"
--> Results show student-advisor pairs -> APPROVED
--> 0 results -> NEVER APPROVED (try ADJUST or NEED_TRIPLE)
+Beispiel: User fragt "Finde Studenten mit Advisors"
+→ Ergebnisse zeigen Student-Advisor Paare → APPROVED
+→ 0 Ergebnisse → NIEMALS APPROVED (versuche ADJUST oder NEED_TRIPLE)
 
-### ADJUST: [what to change]
-You can improve the query YOURSELF with the available schema.
+### ADJUST: [was aendern]
+Du kannst die Query SELBST verbessern mit dem vorhandenen Schema.
 
-Examples:
-- "ADJUST: semantic validation suggests :hasAdvisor instead of :advisor - fix property"
-- "ADJUST: results show all employees, but the question wants only German ones - add a FILTER"
-- "ADJUST: syntax error on line 3 - missing bracket"
+Beispiele:
+- "ADJUST: Semantic validation suggests :hasAdvisor statt :advisor - korrigiere Property"
+- "ADJUST: Ergebnisse zeigen alle Mitarbeiter, aber Frage will nur Deutsche - fuege FILTER hinzu"
+- "ADJUST: Syntax-Fehler in Zeile 3 - fehlende Klammer"
 
-### NEED_TRIPLE: [specific description]
-You are missing a SPECIFIC triple/schema element that you cannot invent.
-Describe EXACTLY what kind of relation/property you need.
+### NEED_TRIPLE: [spezifische Beschreibung]
+Dir fehlt ein SPEZIFISCHES Tripel/Schema-Element das du nicht selbst erfinden kannst.
+Beschreibe GENAU welche Art von Beziehung/Property du brauchst.
 
-Examples:
-- "NEED_TRIPLE: property to filter employees by employment country (e.g. worksInCountry)"
-- "NEED_TRIPLE: relation between a student and their advisor"
-- "NEED_TRIPLE: property to classify products by category"
+Beispiele:
+- "NEED_TRIPLE: Property um Mitarbeiter nach Beschaeftigungsland zu filtern (z.B. worksInCountry)"
+- "NEED_TRIPLE: Beziehung zwischen Student und deren Betreuer/Advisor"
+- "NEED_TRIPLE: Property um Produkte nach Kategorie zu klassifizieren"
 
-## Important rules
+## Wichtige Regeln
 
-1. You ALWAYS see the semantic validation with suggestions - decide YOURSELF whether to use them
-2. When results exist: check whether they MATCH the question, not just whether data is present
-3. EMPTY RESULTS (0 rows) are NEVER APPROVED - always try ADJUST or NEED_TRIPLE!
-4. Only use NEED_TRIPLE when you really need schema information that is missing
-5. For NEED_TRIPLE, describe EXACTLY which triple is missing (semantically, not just syntax)
+1. Du siehst IMMER die Semantic Validation mit Suggestions - entscheide SELBST ob du sie nutzen kannst
+2. Bei Ergebnissen: Pruefe ob sie ZUR FRAGE passen, nicht nur ob Daten da sind
+3. LEERE ERGEBNISSE (0 Resultate) sind NIEMALS APPROVED - versuche immer ADJUST oder NEED_TRIPLE!
+4. NEED_TRIPLE nur wenn du wirklich Schema-Informationen brauchst die nicht da sind
+5. Beschreibe bei NEED_TRIPLE GENAU was fuer ein Tripel fehlt (semantisch, nicht nur Syntax)
 
-Reply ONLY with one of the three formats. No additional explanations."""
+Antworte NUR mit einem der drei Formate. Keine zusaetzlichen Erklaerungen."""
 
 
 class OrchestratorLLM:
@@ -420,16 +421,17 @@ class OrchestratorLLM:
                 api_key=os.getenv("OPENROUTER_API_KEY", ""),
                 base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
                 temperature=0.1,
+                **get_openrouter_kwargs(llm_model),
             )
         elif llm_model.startswith("openai/"):
             self.llm = ChatOpenAI(
                 model=llm_model,
-                api_key=os.getenv("LOCAL_PROXY_API_KEY", ""),
-                base_url=os.getenv("LOCAL_PROXY_BASE_URL", "http://localhost:4000/v1"),
+                api_key=os.getenv("KI4BUW_API_KEY", ""),
+                base_url=os.getenv("KI4BUW_BASE_URL", "https://llm.ki4buw.de/v1"),
                 temperature=0.1,
             )
         elif is_ollama:
-            ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+            ollama_base_url = os.getenv("REMOTE_OLLAMA_LLAMA31_70B_BASE_URL", "http://localhost:11434")
             self.llm = ChatOllama(
                 model=llm_model,
                 base_url=ollama_base_url,
@@ -731,7 +733,7 @@ Respond in JSON:
             variables=result.get("results", {}).get("vars", []) if result.get("success") else [],
         )
 
-        # 4. On query error: extract metadata and provide it as feedback
+        # 4. Bei Query-Fehler: Metadata extrahieren und als Feedback bereitstellen
         if not result.get("success") and execution_error:
             # Extract raw metadata for the failed query (LLM decides interpretation)
             try:

@@ -87,6 +87,23 @@ BASE01 = AdaptiveGroundTruth(
 PREFIX eduo: <http://example.org/ontology/education#>
 SELECT DISTINCT ?student ?studentName ?course ?courseName ?prof ?profName ?dept ?deptName WHERE {
     ?student a eduo:Learner .
+    ?course a eduo:Course .
+    ?prof a eduo:Educator .
+    ?dept a eduo:Division .
+    ?student eduo:enrolledIn ?course .
+    ?student eduo:belongsTo ?dept .
+    ?prof eduo:instructorOf ?course .
+    ?prof eduo:employedAt ?dept .
+    OPTIONAL { ?student eduo:label ?studentName }
+    OPTIONAL { ?course eduo:label ?courseName }
+    OPTIONAL { ?prof eduo:label ?profName }
+    OPTIONAL { ?dept eduo:label ?deptName }
+}
+LIMIT 5000
+    """.strip(), """
+PREFIX eduo: <http://example.org/ontology/education#>
+SELECT DISTINCT ?student ?studentName ?course ?courseName ?prof ?profName ?dept ?deptName WHERE {
+    ?student a eduo:Learner .
     ?student eduo:enrolledIn ?course .
     ?student eduo:belongsTo ?dept .
     ?prof eduo:instructorOf ?course .
@@ -108,7 +125,7 @@ LIMIT 5000
         ColumnDef("dept", RelevanceLevel.ACCEPTABLE, "Department URI", semantic_concept="department"),
         ColumnDef("deptName", RelevanceLevel.ACCEPTABLE, "Department name", semantic_concept="department"),
     ],
-    notes="Complex query: 5 triple patterns with JOIN condition (student and prof in same dept).",
+    notes="Complex query: 5 triple patterns with JOIN condition. Two variants: with/without implicit type constraints.",
 )
 
 # LCA dataset - activities with their flows
@@ -152,14 +169,16 @@ BASE04 = AdaptiveGroundTruth(
     datasets=["TRN"],
     query="Show me 1000 examples of which lines have stop events at which stations.",
     sparql_queries=[
-        # Variant 1: SELECT DISTINCT (667 unique rows, LIMIT doesn't cut)
+        # Variant 1: SELECT DISTINCT, with implicit types
         """
 PREFIX tro: <http://example.org/ontology/transport#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT DISTINCT ?route ?routeName ?routeLongName ?stop ?stopName ?arrivalTime WHERE {
     ?route a tro:Line .
-    ?trip tro:line ?route .
+    ?trip a tro:Trip .
+    ?stop a tro:Stop .
     ?stopTime a tro:StopEvent .
+    ?trip tro:line ?route .
     ?stopTime tro:journey ?trip .
     ?stopTime tro:station ?stop .
     ?stopTime tro:reachTime ?arrivalTime .
@@ -169,14 +188,50 @@ SELECT DISTINCT ?route ?routeName ?routeLongName ?stop ?stopName ?arrivalTime WH
 }
 LIMIT 1000
         """.strip(),
-        # Variant 2: without DISTINCT (duplicates consume LIMIT slots → 627 unique tuples)
+        # Variant 2: without DISTINCT, with implicit types
         """
 PREFIX tro: <http://example.org/ontology/transport#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 SELECT ?route ?routeName ?routeLongName ?stop ?stopName ?arrivalTime WHERE {
     ?route a tro:Line .
-    ?trip tro:line ?route .
+    ?trip a tro:Trip .
+    ?stop a tro:Stop .
     ?stopTime a tro:StopEvent .
+    ?trip tro:line ?route .
+    ?stopTime tro:journey ?trip .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:reachTime ?arrivalTime .
+    OPTIONAL { ?route tro:abbreviation ?routeName }
+    OPTIONAL { ?route tro:fullTitle ?routeLongName }
+    OPTIONAL { ?stop foaf:name ?stopName }
+}
+LIMIT 1000
+        """.strip(),
+        # Variant 3: DISTINCT without implicit types
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT DISTINCT ?route ?routeName ?routeLongName ?stop ?stopName ?arrivalTime WHERE {
+    ?route a tro:Line .
+    ?stopTime a tro:StopEvent .
+    ?trip tro:line ?route .
+    ?stopTime tro:journey ?trip .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:reachTime ?arrivalTime .
+    OPTIONAL { ?route tro:abbreviation ?routeName }
+    OPTIONAL { ?route tro:fullTitle ?routeLongName }
+    OPTIONAL { ?stop foaf:name ?stopName }
+}
+LIMIT 1000
+        """.strip(),
+        # Variant 4: without DISTINCT, without implicit types
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?route ?routeName ?routeLongName ?stop ?stopName ?arrivalTime WHERE {
+    ?route a tro:Line .
+    ?stopTime a tro:StopEvent .
+    ?trip tro:line ?route .
     ?stopTime tro:journey ?trip .
     ?stopTime tro:station ?stop .
     ?stopTime tro:reachTime ?arrivalTime .
@@ -215,8 +270,27 @@ SELECT ?dept ?deptName ?studentCount ?courseCount ?courses ?courseNames WHERE {
                (GROUP_CONCAT(DISTINCT ?courseName; SEPARATOR=", ") AS ?courseNames)
         WHERE {
             ?dept a eduo:Division .
-            ?student eduo:belongsTo ?dept .
             ?student a eduo:Learner .
+            ?course a eduo:Course .
+            ?student eduo:belongsTo ?dept .
+            ?student eduo:enrolledIn ?course .
+            OPTIONAL { ?course eduo:label ?courseName }
+        }
+        GROUP BY ?dept
+    }
+    OPTIONAL { ?dept eduo:label ?deptName }
+}
+    """.strip(), """
+PREFIX eduo: <http://example.org/ontology/education#>
+SELECT ?dept ?deptName ?studentCount ?courseCount ?courses ?courseNames WHERE {
+    {
+        SELECT ?dept (COUNT(DISTINCT ?student) AS ?studentCount) (COUNT(DISTINCT ?course) AS ?courseCount)
+               (GROUP_CONCAT(DISTINCT STR(?course); SEPARATOR=", ") AS ?courses)
+               (GROUP_CONCAT(DISTINCT ?courseName; SEPARATOR=", ") AS ?courseNames)
+        WHERE {
+            ?dept a eduo:Division .
+            ?student a eduo:Learner .
+            ?student eduo:belongsTo ?dept .
             ?student eduo:enrolledIn ?course .
             OPTIONAL { ?course eduo:label ?courseName }
         }
@@ -244,7 +318,9 @@ BASE06 = AdaptiveGroundTruth(
     dataset="TRN",
     datasets=["TRN"],
     query="What is the total number of stop events and average stop events per journey for each line?",
-    sparql_queries=["""
+    sparql_queries=[
+        # Variant 1: Count only stop events WITH departure time (leaveTime)
+        """
 PREFIX tro: <http://example.org/ontology/transport#>
 SELECT ?route ?routeName ?routeLongName
        (SUM(?depsPerTrip) AS ?totalDepartures)
@@ -253,8 +329,9 @@ WHERE {
     {
         SELECT ?route ?trip (COUNT(?stopTime) AS ?depsPerTrip) WHERE {
             ?route a tro:Line .
-            ?trip tro:line ?route .
+            ?trip a tro:Trip .
             ?stopTime a tro:StopEvent .
+            ?trip tro:line ?route .
             ?stopTime tro:journey ?trip .
             ?stopTime tro:leaveTime ?depTime .
         }
@@ -265,7 +342,76 @@ WHERE {
 }
 GROUP BY ?route ?routeName ?routeLongName
 ORDER BY DESC(?totalDepartures)
-    """.strip()],
+        """.strip(),
+        # Variant 2: Count ALL stop events (no leaveTime filter — includes terminal stops)
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?route ?routeName ?routeLongName
+       (SUM(?stopsPerTrip) AS ?totalStopEvents)
+       (AVG(?stopsPerTrip) AS ?avgStopEventsPerTrip)
+WHERE {
+    {
+        SELECT ?route ?trip (COUNT(?stopTime) AS ?stopsPerTrip) WHERE {
+            ?route a tro:Line .
+            ?trip a tro:Trip .
+            ?stopTime a tro:StopEvent .
+            ?trip tro:line ?route .
+            ?stopTime tro:journey ?trip .
+        }
+        GROUP BY ?route ?trip
+    }
+    OPTIONAL { ?route tro:abbreviation ?routeName }
+    OPTIONAL { ?route tro:fullTitle ?routeLongName }
+}
+GROUP BY ?route ?routeName ?routeLongName
+ORDER BY DESC(?totalStopEvents)
+        """.strip(),
+        # Variant 3: V1 without implicit ?trip type
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?route ?routeName ?routeLongName
+       (SUM(?depsPerTrip) AS ?totalDepartures)
+       (AVG(?depsPerTrip) AS ?avgDeparturesPerTrip)
+WHERE {
+    {
+        SELECT ?route ?trip (COUNT(?stopTime) AS ?depsPerTrip) WHERE {
+            ?route a tro:Line .
+            ?stopTime a tro:StopEvent .
+            ?trip tro:line ?route .
+            ?stopTime tro:journey ?trip .
+            ?stopTime tro:leaveTime ?depTime .
+        }
+        GROUP BY ?route ?trip
+    }
+    OPTIONAL { ?route tro:abbreviation ?routeName }
+    OPTIONAL { ?route tro:fullTitle ?routeLongName }
+}
+GROUP BY ?route ?routeName ?routeLongName
+ORDER BY DESC(?totalDepartures)
+        """.strip(),
+        # Variant 4: V2 without implicit ?trip type
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?route ?routeName ?routeLongName
+       (SUM(?stopsPerTrip) AS ?totalStopEvents)
+       (AVG(?stopsPerTrip) AS ?avgStopEventsPerTrip)
+WHERE {
+    {
+        SELECT ?route ?trip (COUNT(?stopTime) AS ?stopsPerTrip) WHERE {
+            ?route a tro:Line .
+            ?stopTime a tro:StopEvent .
+            ?trip tro:line ?route .
+            ?stopTime tro:journey ?trip .
+        }
+        GROUP BY ?route ?trip
+    }
+    OPTIONAL { ?route tro:abbreviation ?routeName }
+    OPTIONAL { ?route tro:fullTitle ?routeLongName }
+}
+GROUP BY ?route ?routeName ?routeLongName
+ORDER BY DESC(?totalStopEvents)
+        """.strip(),
+    ],
     columns=[
         ColumnDef("route", RelevanceLevel.PREFERRED, "Route URI", semantic_concept="route"),
         ColumnDef("routeName", RelevanceLevel.PREFERRED, "Route short name", semantic_concept="route"),
@@ -273,7 +419,7 @@ ORDER BY DESC(?totalDepartures)
         ColumnDef("totalDepartures", RelevanceLevel.PREFERRED, "Total departures", is_measurement=True, semantic_concept="departures"),
         ColumnDef("avgDeparturesPerTrip", RelevanceLevel.PREFERRED, "Average departures per trip", is_measurement=True, semantic_concept="departures"),
     ],
-    notes="Baseline: Subquery with GROUP BY, SUM and AVG. Tests aggregation over aggregation.",
+    notes="Baseline: Subquery with GROUP BY, SUM and AVG. Two variants: with leaveTime filter (departures only) vs. all stop events (including terminal stops).",
 )
 
 # From A07 in use_case_queries_tiered_tuples.py (verified/tested) - adjusted LIMIT to 10
@@ -285,7 +431,71 @@ BASE08 = AdaptiveGroundTruth(
     datasets=["TRN"],
     query="Show the top 10 stations with the most journeys.",
     sparql_queries=[
-        # Variant 1: COUNT without DISTINCT (counts each StopTime per trip)
+        # Variant 1: COUNT without DISTINCT, GROUP BY URI+name
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?stop ?stopName (COUNT(?trip) AS ?tripCount) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?stop a tro:Stop .
+    ?trip a tro:Trip .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:journey ?trip .
+    OPTIONAL { ?stop foaf:name ?stopName }
+}
+GROUP BY ?stop ?stopName
+ORDER BY DESC(?tripCount)
+LIMIT 10
+        """.strip(),
+        # Variant 2: COUNT DISTINCT, GROUP BY URI+name
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?stop ?stopName (COUNT(DISTINCT ?trip) AS ?tripCount) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?stop a tro:Stop .
+    ?trip a tro:Trip .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:journey ?trip .
+    OPTIONAL { ?stop foaf:name ?stopName }
+}
+GROUP BY ?stop ?stopName
+ORDER BY DESC(?tripCount)
+LIMIT 10
+        """.strip(),
+        # Variant 3: COUNT, GROUP BY name only (merges stops sharing a name across lines)
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?stopName (COUNT(?trip) AS ?tripCount) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?stop a tro:Stop .
+    ?trip a tro:Trip .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:journey ?trip .
+    ?stop foaf:name ?stopName .
+}
+GROUP BY ?stopName
+ORDER BY DESC(?tripCount)
+LIMIT 10
+        """.strip(),
+        # Variant 4: COUNT DISTINCT, GROUP BY name only
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?stopName (COUNT(DISTINCT ?trip) AS ?tripCount) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?stop a tro:Stop .
+    ?trip a tro:Trip .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:journey ?trip .
+    ?stop foaf:name ?stopName .
+}
+GROUP BY ?stopName
+ORDER BY DESC(?tripCount)
+LIMIT 10
+        """.strip(),
+        # Variant 5: V1 untyped (no ?stop/?trip type filter)
         """
 PREFIX tro: <http://example.org/ontology/transport#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -299,7 +509,7 @@ GROUP BY ?stop ?stopName
 ORDER BY DESC(?tripCount)
 LIMIT 10
         """.strip(),
-        # Variant 2: COUNT DISTINCT (counts unique trips per stop)
+        # Variant 6: V2 untyped
         """
 PREFIX tro: <http://example.org/ontology/transport#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -313,13 +523,118 @@ GROUP BY ?stop ?stopName
 ORDER BY DESC(?tripCount)
 LIMIT 10
         """.strip(),
+        # Variant 7: typed + COUNT + GROUP BY URI+name + REQUIRED name
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?stop ?stopName (COUNT(?trip) AS ?tripCount) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?stop a tro:Stop .
+    ?trip a tro:Trip .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:journey ?trip .
+    ?stop foaf:name ?stopName .
+}
+GROUP BY ?stop ?stopName
+ORDER BY DESC(?tripCount)
+LIMIT 10
+        """.strip(),
+        # Variant 8: typed + COUNT DISTINCT + GROUP BY URI+name + REQUIRED name
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?stop ?stopName (COUNT(DISTINCT ?trip) AS ?tripCount) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?stop a tro:Stop .
+    ?trip a tro:Trip .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:journey ?trip .
+    ?stop foaf:name ?stopName .
+}
+GROUP BY ?stop ?stopName
+ORDER BY DESC(?tripCount)
+LIMIT 10
+        """.strip(),
+        # Variant 9: untyped + COUNT + GROUP BY URI+name + REQUIRED name
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?stop ?stopName (COUNT(?trip) AS ?tripCount) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:journey ?trip .
+    ?stop foaf:name ?stopName .
+}
+GROUP BY ?stop ?stopName
+ORDER BY DESC(?tripCount)
+LIMIT 10
+        """.strip(),
+        # Variant 10: untyped + COUNT DISTINCT + GROUP BY URI+name + REQUIRED name
+        """
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?stop ?stopName (COUNT(DISTINCT ?trip) AS ?tripCount) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?stopTime tro:station ?stop .
+    ?stopTime tro:journey ?trip .
+    ?stop foaf:name ?stopName .
+}
+GROUP BY ?stop ?stopName
+ORDER BY DESC(?tripCount)
+LIMIT 10
+        """.strip(),
     ],
     columns=[
-        ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
-        ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
-        ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        [  # Variant 1: GROUP BY URI+name
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # Variant 2
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # Variant 3: GROUP BY name only (no URI)
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # Variant 4
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # Variant 5: V1 untyped (GROUP BY URI+name, OPTIONAL name)
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # Variant 6: V2 untyped
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # Variant 7: typed + COUNT + REQUIRED name
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # Variant 8: typed + COUNT DISTINCT + REQUIRED name
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # Variant 9: untyped + COUNT + REQUIRED name
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # Variant 10: untyped + COUNT DISTINCT + REQUIRED name
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("stopName", RelevanceLevel.PREFERRED, "Stop name", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.ACCEPTABLE, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
     ],
-    notes="Baseline: ORDER BY + LIMIT. From A07. Two variants: COUNT vs COUNT DISTINCT (some stops have multiple StopTimes per trip).",
+    notes="Baseline: ORDER BY + LIMIT. 10 variants: COUNT/COUNT DISTINCT × GROUP-by-URI+name/name-only × typed/untyped × OPTIONAL/REQUIRED name.",
 )
 
 # EDU complex query - professors teaching graduate courses without advisees
@@ -365,6 +680,34 @@ SELECT ?product ?label ?price ?priceCategory WHERE {
     {
         SELECT ?product ?label ?price ("cheapest" AS ?priceCategory) WHERE {
             ?product a bsbm:Product .
+            ?offer a bsbm:Offer .
+            ?offer bsbm:product ?product .
+            ?offer bsbm:price ?price .
+            OPTIONAL { ?product rdfs:label ?label }
+        }
+        ORDER BY ASC(?price)
+        LIMIT 1
+    }
+    UNION
+    {
+        SELECT ?product ?label ?price ("most_expensive" AS ?priceCategory) WHERE {
+            ?product a bsbm:Product .
+            ?offer a bsbm:Offer .
+            ?offer bsbm:product ?product .
+            ?offer bsbm:price ?price .
+            OPTIONAL { ?product rdfs:label ?label }
+        }
+        ORDER BY DESC(?price)
+        LIMIT 1
+    }
+}
+    """.strip(), """
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?product ?label ?price ?priceCategory WHERE {
+    {
+        SELECT ?product ?label ?price ("cheapest" AS ?priceCategory) WHERE {
+            ?product a bsbm:Product .
             ?offer bsbm:product ?product .
             ?offer bsbm:price ?price .
             OPTIONAL { ?product rdfs:label ?label }
@@ -391,7 +734,7 @@ SELECT ?product ?label ?price ?priceCategory WHERE {
         ColumnDef("price", RelevanceLevel.PREFERRED, "Price", is_measurement=True, semantic_concept="price"),
         ColumnDef("priceCategory", RelevanceLevel.ACCEPTABLE, "Price category", semantic_concept="priceCategory", is_bind_label=True),
     ],
-    notes="Baseline: UNION with ORDER BY + LIMIT subqueries for extreme values.",
+    notes="Baseline: UNION with ORDER BY + LIMIT subqueries. Two variants: with/without implicit ?offer type.",
 )
 
 # From A13 in use_case_queries_tiered_tuples.py (verified/tested)
@@ -403,6 +746,17 @@ BASE11 = AdaptiveGroundTruth(
     datasets=["NRG"],
     query="Which deposits have more than 50 million in extracted crude total?",
     sparql_queries=["""
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT ?field ?fieldName (SUM(?oilProd) AS ?totalOil) WHERE {
+    ?prod a eno:AnnualDepositOutput .
+    ?field a eno:Deposit .
+    ?prod eno:outputForDeposit ?field .
+    ?prod eno:extractedCrude ?oilProd .
+    OPTIONAL { ?field eno:designation ?fieldName }
+}
+GROUP BY ?field ?fieldName
+HAVING(SUM(?oilProd) > 50)
+    """.strip(), """
 PREFIX eno: <http://example.org/ontology/energy#>
 SELECT ?field ?fieldName (SUM(?oilProd) AS ?totalOil) WHERE {
     ?prod a eno:AnnualDepositOutput .
@@ -434,6 +788,19 @@ PREFIX eduo: <http://example.org/ontology/education#>
 SELECT DISTINCT ?course ?courseName ?prof ?profName ?dept ?deptName WHERE {
     ?course a ?courseType .
     FILTER(?courseType IN (eduo:AdvancedModule, eduo:BasicModule))
+    ?prof a eduo:Educator .
+    ?dept a eduo:Division .
+    ?prof eduo:instructorOf ?course .
+    ?prof eduo:employedAt ?dept .
+    OPTIONAL { ?course eduo:label ?courseName }
+    OPTIONAL { ?prof eduo:label ?profName }
+    OPTIONAL { ?dept eduo:label ?deptName }
+}
+    """.strip(), """
+PREFIX eduo: <http://example.org/ontology/education#>
+SELECT DISTINCT ?course ?courseName ?prof ?profName ?dept ?deptName WHERE {
+    ?course a ?courseType .
+    FILTER(?courseType IN (eduo:AdvancedModule, eduo:BasicModule))
     ?prof eduo:instructorOf ?course .
     ?prof eduo:employedAt ?dept .
     OPTIONAL { ?course eduo:label ?courseName }
@@ -449,7 +816,7 @@ SELECT DISTINCT ?course ?courseName ?prof ?profName ?dept ?deptName WHERE {
         ColumnDef("dept", RelevanceLevel.ACCEPTABLE, "Department URI", semantic_concept="department"),
         ColumnDef("deptName", RelevanceLevel.ACCEPTABLE, "Department name", semantic_concept="department"),
     ],
-    notes="Complex query: 4 triple patterns with FILTER and multi-hop.",
+    notes="Complex query: 4 triple patterns with FILTER. Two variants: with/without implicit ?prof/?dept types.",
 )
 
 # -----------------------------------------------------------------------------
@@ -465,6 +832,19 @@ BASE13 = AdaptiveGroundTruth(
     datasets=["NRG"],
     query="Show the condition and active deposit operator of the TROLL deposit.",
     sparql_queries=["""
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT ?field ?name ?status ?operator ?operatorName WHERE {
+    ?field a eno:Deposit .
+    ?field eno:designation ?name .
+    FILTER(UCASE(?name) = "TROLL")
+    OPTIONAL { ?field eno:condition ?status }
+    OPTIONAL {
+        ?field eno:activeDepositOperator ?operator .
+        ?operator a eno:Company .
+        OPTIONAL { ?operator eno:designation ?operatorName }
+    }
+}
+    """.strip(), """
 PREFIX eno: <http://example.org/ontology/energy#>
 SELECT ?field ?name ?status ?operator ?operatorName WHERE {
     ?field a eno:Deposit .
@@ -497,6 +877,20 @@ BASE14 = AdaptiveGroundTruth(
     sparql_queries=["""
 PREFIX eduo: <http://example.org/ontology/education#>
 SELECT DISTINCT ?course ?courseName ?dept ?deptName WHERE {
+    ?uni a eduo:Academy .
+    ?dept a eduo:Division .
+    ?prof a eduo:Educator .
+    ?course a eduo:Course .
+    ?uni eduo:label "University0" .
+    ?dept eduo:partOf ?uni .
+    ?prof eduo:employedAt ?dept .
+    ?prof eduo:instructorOf ?course .
+    OPTIONAL { ?course eduo:label ?courseName }
+    OPTIONAL { ?dept eduo:label ?deptName }
+}
+    """.strip(), """
+PREFIX eduo: <http://example.org/ontology/education#>
+SELECT DISTINCT ?course ?courseName ?dept ?deptName WHERE {
     ?uni eduo:label "University0" .
     ?dept eduo:partOf ?uni .
     ?prof eduo:employedAt ?dept .
@@ -523,6 +917,16 @@ BASE16 = AdaptiveGroundTruth(
     datasets=["NRG"],
     query="Which deposits have Statoil as their active deposit operator?",
     sparql_queries=["""
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT DISTINCT ?field ?fieldName WHERE {
+    ?field a eno:Deposit .
+    ?company a eno:Company .
+    ?field eno:activeDepositOperator ?company .
+    ?company eno:designation ?companyName .
+    FILTER(REGEX(?companyName, "STATOIL", "i"))
+    OPTIONAL { ?field eno:designation ?fieldName }
+}
+    """.strip(), """
 PREFIX eno: <http://example.org/ontology/energy#>
 SELECT DISTINCT ?field ?fieldName WHERE {
     ?field a eno:Deposit .
@@ -569,7 +973,13 @@ SELECT DISTINCT ?wellbore ?name ?depth WHERE {
         ColumnDef("name", RelevanceLevel.PREFERRED, "Wellbore name", semantic_concept="wellbore"),
         ColumnDef("depth", RelevanceLevel.ACCEPTABLE, "Depth value", semantic_concept="depth"),
     ],
-    notes="Baseline: Numeric FILTER (exact format). From A05.",
+    notes=(
+        "Baseline: Numeric FILTER (exact format). From A05. "
+        "Two admissible readings: the depth measure is either totalDrillDepth "
+        "(along the path) or finalVerticalDrillDepth (vertical). The two "
+        "belongsToWell readings added on 2026-04-21 for the former SYN wording "
+        "'wells' were removed on 2026-09-14 when SYN18 was reworded to 'drill holes'."
+    ),
 )
 
 # From A11 in use_case_queries_tiered_tuples.py (verified/tested)
@@ -584,6 +994,23 @@ BASE19 = AdaptiveGroundTruth(
 PREFIX tro: <http://example.org/ontology/transport#>
 SELECT DISTINCT ?trip ?tripShortName ?headsign ?routeName ?routeLongName ?departureTime WHERE {
     ?stopTime a tro:StopEvent .
+    ?trip a tro:Trip .
+    ?stopTime tro:journey ?trip .
+    ?stopTime tro:leaveTime ?departureTime .
+    FILTER(?departureTime >= "00:00:00" && ?departureTime < "01:00:00")
+    OPTIONAL { ?trip tro:abbreviation ?tripShortName }
+    OPTIONAL { ?trip tro:destination ?headsign }
+    OPTIONAL {
+        ?trip tro:line ?route .
+        ?route a tro:Line .
+        ?route tro:abbreviation ?routeName .
+        ?route tro:fullTitle ?routeLongName .
+    }
+}
+    """.strip(), """
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT DISTINCT ?trip ?tripShortName ?headsign ?routeName ?routeLongName ?departureTime WHERE {
+    ?stopTime a tro:StopEvent .
     ?stopTime tro:journey ?trip .
     ?stopTime tro:leaveTime ?departureTime .
     FILTER(?departureTime >= "00:00:00" && ?departureTime < "01:00:00")
@@ -595,6 +1022,40 @@ SELECT DISTINCT ?trip ?tripShortName ?headsign ?routeName ?routeLongName ?depart
         ?route tro:fullTitle ?routeLongName .
     }
 }
+    """.strip(), """
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?trip ?tripShortName ?headsign ?routeName ?routeLongName (MIN(?leaveTime) AS ?departureTime) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?trip a tro:Trip .
+    ?stopTime tro:journey ?trip .
+    ?stopTime tro:leaveTime ?leaveTime .
+    OPTIONAL { ?trip tro:abbreviation ?tripShortName }
+    OPTIONAL { ?trip tro:destination ?headsign }
+    OPTIONAL {
+        ?trip tro:line ?route .
+        ?route a tro:Line .
+        ?route tro:abbreviation ?routeName .
+        ?route tro:fullTitle ?routeLongName .
+    }
+}
+GROUP BY ?trip ?tripShortName ?headsign ?routeName ?routeLongName
+HAVING (MIN(?leaveTime) >= "00:00:00" && MIN(?leaveTime) < "01:00:00")
+    """.strip(), """
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?trip ?tripShortName ?headsign ?routeName ?routeLongName (MIN(?leaveTime) AS ?departureTime) WHERE {
+    ?stopTime a tro:StopEvent .
+    ?stopTime tro:journey ?trip .
+    ?stopTime tro:leaveTime ?leaveTime .
+    OPTIONAL { ?trip tro:abbreviation ?tripShortName }
+    OPTIONAL { ?trip tro:destination ?headsign }
+    OPTIONAL {
+        ?trip tro:line ?route .
+        ?route tro:abbreviation ?routeName .
+        ?route tro:fullTitle ?routeLongName .
+    }
+}
+GROUP BY ?trip ?tripShortName ?headsign ?routeName ?routeLongName
+HAVING (MIN(?leaveTime) >= "00:00:00" && MIN(?leaveTime) < "01:00:00")
     """.strip()],
     columns=[
         ColumnDef("trip", RelevanceLevel.PREFERRED, "Trip URI", semantic_concept="trip"),
@@ -604,7 +1065,7 @@ SELECT DISTINCT ?trip ?tripShortName ?headsign ?routeName ?routeLongName ?depart
         ColumnDef("routeLongName", RelevanceLevel.ACCEPTABLE, "Route long name", semantic_concept="route"),
         ColumnDef("departureTime", RelevanceLevel.ACCEPTABLE, "Departure time", semantic_concept="departureTime"),
     ],
-    notes="Baseline: Time FILTER. Changed to 00:00-01:00 because TRN test data only has times in 00:xx, 01:xx, 06:xx.",
+    notes="Baseline: Time FILTER. 4 variants: typed/untyped × per-event/per-trip (MIN leaveTime).",
 )
 
 # GROUP_CONCAT query - replaces redundant string filter pattern
@@ -625,6 +1086,7 @@ SELECT ?company ?companyName
        (GROUP_CONCAT(STR(?fieldId); separator=", ") AS ?operatedFieldIds)
 WHERE {
     ?field a eno:Deposit .
+    ?company a eno:Company .
     ?field eno:activeDepositOperator ?company .
     OPTIONAL { ?field eno:designation ?fieldName }
     OPTIONAL { ?field eno:registryId ?fieldId }
@@ -638,6 +1100,32 @@ PREFIX eno: <http://example.org/ontology/energy#>
 SELECT ?operator ?operatorName ?deposit ?depositName WHERE {
     ?operator a eno:Company .
     ?deposit a eno:Deposit .
+    ?deposit eno:activeDepositOperator ?operator .
+    OPTIONAL { ?operator eno:designation ?operatorName }
+    OPTIONAL { ?deposit eno:designation ?depositName }
+}
+ORDER BY ?operatorName ?depositName
+        """.strip(),
+        # Variant 3: V1 untyped (no implicit ?company type)
+        """
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT ?company ?companyName
+       (GROUP_CONCAT(?fieldName; separator=", ") AS ?operatedFields)
+       (GROUP_CONCAT(STR(?field); separator=", ") AS ?operatedFieldURIs)
+       (GROUP_CONCAT(STR(?fieldId); separator=", ") AS ?operatedFieldIds)
+WHERE {
+    ?field a eno:Deposit .
+    ?field eno:activeDepositOperator ?company .
+    OPTIONAL { ?field eno:designation ?fieldName }
+    OPTIONAL { ?field eno:registryId ?fieldId }
+    OPTIONAL { ?company eno:designation ?companyName }
+}
+GROUP BY ?company ?companyName
+        """.strip(),
+        # Variant 4: V2 untyped
+        """
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT ?operator ?operatorName ?deposit ?depositName WHERE {
     ?deposit eno:activeDepositOperator ?operator .
     OPTIONAL { ?operator eno:designation ?operatorName }
     OPTIONAL { ?deposit eno:designation ?depositName }
@@ -659,8 +1147,21 @@ ORDER BY ?operatorName ?depositName
             ColumnDef("deposit", RelevanceLevel.PREFERRED, "Deposit URI", semantic_concept="field"),
             ColumnDef("depositName", RelevanceLevel.PREFERRED, "Deposit name", semantic_concept="field"),
         ],
+        [  # Query 3: V1 untyped (same columns as V1)
+            ColumnDef("company", RelevanceLevel.PREFERRED, "Company URI", semantic_concept="company"),
+            ColumnDef("companyName", RelevanceLevel.PREFERRED, "Company name", semantic_concept="company"),
+            ColumnDef("operatedFields", RelevanceLevel.PREFERRED, "Operated fields (names)", semantic_concept="fields"),
+            ColumnDef("operatedFieldURIs", RelevanceLevel.ACCEPTABLE, "Operated field URIs", semantic_concept="fields"),
+            ColumnDef("operatedFieldIds", RelevanceLevel.ACCEPTABLE, "Operated field IDs", semantic_concept="fields"),
+        ],
+        [  # Query 4: V2 untyped (same columns as V2)
+            ColumnDef("operator", RelevanceLevel.PREFERRED, "Operator URI", semantic_concept="company"),
+            ColumnDef("operatorName", RelevanceLevel.PREFERRED, "Operator name", semantic_concept="company"),
+            ColumnDef("deposit", RelevanceLevel.PREFERRED, "Deposit URI", semantic_concept="field"),
+            ColumnDef("depositName", RelevanceLevel.PREFERRED, "Deposit name", semantic_concept="field"),
+        ],
     ],
-    notes="Baseline: Two variants: GROUP_CONCAT aggregation vs. non-aggregated rows per company-field pair.",
+    notes="Baseline: Four variants: typed/untyped × aggregated/non-aggregated.",
 )
 
 # Det norske oljeselskap - company with known synonym (Aker BP)
@@ -672,6 +1173,16 @@ BASE21 = AdaptiveGroundTruth(
     datasets=["NRG"],
     query="Which deposits are operated by Det norske oljeselskap ASA?",
     sparql_queries=["""
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT DISTINCT ?field ?fieldName WHERE {
+    ?field a eno:Deposit .
+    ?company a eno:Company .
+    ?field eno:activeDepositOperator ?company .
+    ?company eno:designation ?companyName .
+    FILTER(REGEX(?companyName, "Det norske oljeselskap", "i"))
+    OPTIONAL { ?field eno:designation ?fieldName }
+}
+    """.strip(), """
 PREFIX eno: <http://example.org/ontology/energy#>
 SELECT DISTINCT ?field ?fieldName WHERE {
     ?field a eno:Deposit .
@@ -702,8 +1213,18 @@ SET_BASE = [
 # EDU/TRN/NRG: uses common terms (students, routes, fields, etc.)
 # =============================================================================
 
-def _create_synonym_variant(base: AdaptiveGroundTruth, new_query: str, description: str) -> AdaptiveGroundTruth:
-    """Create a synonym variant that shares GT with base query."""
+def _create_synonym_variant(
+    base: AdaptiveGroundTruth,
+    new_query: str,
+    description: str,
+    extra_sparql_queries: list[str] | None = None,
+    extra_notes: str = "",
+) -> AdaptiveGroundTruth:
+    """Create a synonym variant that shares GT with base query.
+
+    extra_sparql_queries: additional admissible readings that only apply to the SYN wording
+    (appended after the base readings; the evaluator scores every reading and keeps the best).
+    """
     return AdaptiveGroundTruth(
         query_id=f"SYN{base.query_id[4:]}",  # BASE01 -> SYN01
         query_set="SYN",
@@ -711,9 +1232,9 @@ def _create_synonym_variant(base: AdaptiveGroundTruth, new_query: str, descripti
         dataset=base.dataset,
         datasets=base.datasets,
         query=new_query,
-        sparql_queries=base.sparql_queries,  # Same SPARQL
+        sparql_queries=list(base.sparql_queries) + list(extra_sparql_queries or []),
         columns=base.columns,  # Same columns
-        notes=f"Synonym variant of {base.query_id}: {description}",
+        notes=f"Synonym variant of {base.query_id}: {description}" + (f" {extra_notes}" if extra_notes else ""),
     )
 
 
@@ -791,14 +1312,14 @@ SYN14 = _create_synonym_variant(
 
 SYN16 = _create_synonym_variant(
     BASE16,
-    "Which fields are operated by Equinor?",
-    "deposits->fields, active deposit operator->operated by, Statoil->Equinor",
+    "Which fields are currently operated by Equinor?",
+    "deposits->fields, active deposit operator->currently operated by, Statoil->Equinor",
 )
 
 SYN18 = _create_synonym_variant(
     BASE18,
-    "Which wells reach below 3 kilometers?",
-    "boreholes->wells, total drill depth greater than->reach below, 3000 meters->3 kilometers (unit change)",
+    "Which drill holes go deeper than 3 kilometers?",
+    "boreholes->drill holes, total drill depth greater than->go deeper than, 3000 meters->3 kilometers (unit change)",
 )
 
 SYN19 = _create_synonym_variant(
@@ -809,14 +1330,41 @@ SYN19 = _create_synonym_variant(
 
 SYN20 = _create_synonym_variant(
     BASE20,
-    "For each oil company, which production sites do they manage?",
-    "active deposit operator->oil company, deposits->production sites, operate->manage, list->which (circumlocution)",
+    "For each oil company, which production sites do they currently manage?",
+    "active deposit operator->oil company, deposits->production sites, operate->currently manage, list->which (circumlocution)",
 )
 
 SYN21 = _create_synonym_variant(
     BASE21,
-    "Which fields does Aker BP manage?",
-    "deposits->fields, operated->manage, Det norske oljeselskap ASA->Aker BP",
+    "Which fields does Aker BP currently manage?",
+    "deposits->fields, operated->currently manage, Det norske oljeselskap ASA->Aker BP",
+    extra_sparql_queries=["""
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT DISTINCT ?field ?fieldName WHERE {
+    ?field a eno:Deposit .
+    ?company a eno:Company .
+    ?field eno:activeDepositOperator ?company .
+    ?company eno:designation ?companyName .
+    FILTER(REGEX(?companyName, "Det norske oljeselskap|BP Norge", "i"))
+    OPTIONAL { ?field eno:designation ?fieldName }
+}
+    """.strip(), """
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT DISTINCT ?field ?fieldName WHERE {
+    ?field a eno:Deposit .
+    ?field eno:activeDepositOperator ?company .
+    ?company eno:designation ?companyName .
+    FILTER(REGEX(?companyName, "Det norske oljeselskap|BP Norge", "i"))
+    OPTIONAL { ?field eno:designation ?fieldName }
+}
+    """.strip()],
+    extra_notes=(
+        "Readings 3 and 4 added on 2026-09-15: Aker BP was formed in 2016 by merging Det norske "
+        "oljeselskap ASA with BP Norge AS. The data still records both predecessors as active "
+        "operators (Det norske: 2 fields, BP Norge: 6 fields) and lists 'Aker BP ASA' as a company "
+        "without operated fields, so the fields of both predecessors are an admissible answer to the "
+        "SYN wording. Added after inspecting the stage-2 runs; BASE21 keeps the Det norske-only readings."
+    ),
 )
 
 # Collect all SYN queries (17 total after removing SYN02, SYN07, SYN15, SYN17)
@@ -980,6 +1528,18 @@ PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT ?product ?label (AVG(?rating) AS ?avgRating) WHERE {
     ?product a bsbm:Product .
+    ?review a bsbm:Review .
+    ?review bsbm:reviewFor ?product .
+    ?review bsbm:rating1 ?rating .
+    OPTIONAL { ?product rdfs:label ?label }
+}
+GROUP BY ?product ?label
+ORDER BY DESC(?avgRating)
+    """.strip(), """
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?product ?label (AVG(?rating) AS ?avgRating) WHERE {
+    ?product a bsbm:Product .
     ?review bsbm:reviewFor ?product .
     ?review bsbm:rating1 ?rating .
     OPTIONAL { ?product rdfs:label ?label }
@@ -1006,6 +1566,19 @@ UNDER03 = AdaptiveGroundTruth(
     datasets=["NRG"],
     query="Get recent production data.",
     sparql_queries=["""
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT ?field ?fieldName ?year ?oil ?gas WHERE {
+    ?prod a eno:AnnualDepositOutput .
+    ?field a eno:Deposit .
+    ?prod eno:outputForDeposit ?field .
+    ?prod eno:outputYear ?year .
+    FILTER(?year >= 2010)
+    OPTIONAL { ?prod eno:extractedCrude ?oil }
+    OPTIONAL { ?prod eno:extractedGas ?gas }
+    OPTIONAL { ?field eno:designation ?fieldName }
+}
+ORDER BY DESC(?year)
+    """.strip(), """
 PREFIX eno: <http://example.org/ontology/energy#>
 SELECT ?field ?fieldName ?year ?oil ?gas WHERE {
     ?prod a eno:AnnualDepositOutput .
@@ -1036,6 +1609,16 @@ UNDER04 = AdaptiveGroundTruth(
     datasets=["EDU"],
     query="Find large departments.",
     sparql_queries=["""
+PREFIX eduo: <http://example.org/ontology/education#>
+SELECT ?dept ?deptName (COUNT(?faculty) AS ?facultyCount) WHERE {
+    ?dept a eduo:Division .
+    ?faculty a eduo:Educator .
+    ?faculty eduo:employedAt ?dept .
+    OPTIONAL { ?dept eduo:label ?deptName }
+}
+GROUP BY ?dept ?deptName
+ORDER BY DESC(?facultyCount)
+    """.strip(), """
 PREFIX eduo: <http://example.org/ontology/education#>
 SELECT ?dept ?deptName (COUNT(?faculty) AS ?facultyCount) WHERE {
     ?dept a eduo:Division .
@@ -1093,6 +1676,18 @@ UNDER08 = AdaptiveGroundTruth(
     datasets=["BSBM"],
     query="Show affordable products.",
     sparql_queries=["""
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT DISTINCT ?product ?label ?price WHERE {
+    ?product a bsbm:Product .
+    ?offer a bsbm:Offer .
+    ?offer bsbm:product ?product .
+    ?offer bsbm:price ?price .
+    FILTER(?price < 100)
+    OPTIONAL { ?product rdfs:label ?label }
+}
+ORDER BY ?price
+    """.strip(), """
 PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT DISTINCT ?product ?label ?price WHERE {
@@ -1199,6 +1794,8 @@ SELECT ?category (AVG(?itemCount) AS ?average) WHERE {
     {
         SELECT ?dept (COUNT(?course) AS ?itemCount) ("courses_per_department" AS ?category) WHERE {
             ?dept a eduo:Division .
+            ?prof a eduo:Educator .
+            ?course a eduo:Course .
             ?prof eduo:employedAt ?dept .
             ?prof eduo:instructorOf ?course .
         }
@@ -1208,6 +1805,34 @@ SELECT ?category (AVG(?itemCount) AS ?average) WHERE {
     {
         SELECT ?route (COUNT(DISTINCT ?stop) AS ?itemCount) ("stops_per_route" AS ?category) WHERE {
             ?route a tro:Line .
+            ?trip a tro:Trip .
+            ?stopTime a tro:StopEvent .
+            ?stop a tro:Stop .
+            ?trip tro:line ?route .
+            ?stopTime tro:journey ?trip .
+            ?stopTime tro:station ?stop .
+        }
+        GROUP BY ?route
+    }
+}
+GROUP BY ?category
+    """.strip(), """
+PREFIX eduo: <http://example.org/ontology/education#>
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?category (AVG(?itemCount) AS ?average) WHERE {
+    {
+        SELECT ?dept (COUNT(?course) AS ?itemCount) ("courses_per_department" AS ?category) WHERE {
+            ?dept a eduo:Division .
+            ?prof eduo:employedAt ?dept .
+            ?prof eduo:instructorOf ?course .
+        }
+        GROUP BY ?dept
+    }
+    UNION
+    {
+        SELECT ?route (COUNT(DISTINCT ?stop) AS ?itemCount) ("stops_per_route" AS ?category) WHERE {
+            ?route a tro:Line .
+            ?stopTime a tro:StopEvent .
             ?trip tro:line ?route .
             ?stopTime tro:journey ?trip .
             ?stopTime tro:station ?stop .
@@ -1243,6 +1868,142 @@ SELECT ?name ?count ?rankType WHERE {
         SELECT ?name ?count ("top_department" AS ?rankType) WHERE {
             SELECT ?dept (SAMPLE(?deptName) AS ?name) (COUNT(?faculty) AS ?count) WHERE {
                 ?dept a eduo:Division .
+                ?faculty a eduo:Educator .
+                ?faculty eduo:employedAt ?dept .
+                OPTIONAL { ?dept eduo:label ?deptName }
+            }
+            GROUP BY ?dept
+            ORDER BY DESC(?count)
+            LIMIT 2
+        }
+    }
+    UNION
+    {
+        SELECT ?name ?count ("top_stop" AS ?rankType) WHERE {
+            SELECT ?stop (SAMPLE(?stopName) AS ?name) (COUNT(?trip) AS ?count) WHERE {
+                ?stopTime a tro:StopEvent .
+                ?stop a tro:Stop .
+                ?trip a tro:Trip .
+                ?stopTime tro:station ?stop .
+                ?stopTime tro:journey ?trip .
+                OPTIONAL { ?stop foaf:name ?stopName }
+            }
+            GROUP BY ?stop
+            ORDER BY DESC(?count)
+            LIMIT 2
+        }
+    }
+}
+ORDER BY ?rankType DESC(?count)
+        """.strip(),
+        # Variant 2: domain-specific, COUNT without DISTINCT
+        """
+PREFIX eduo: <http://example.org/ontology/education#>
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?department ?facultyCount ?stop ?tripCount WHERE {
+    {
+        SELECT ?department (COUNT(?faculty) AS ?facultyCount) WHERE {
+            ?department a eduo:Division .
+            ?faculty a eduo:Educator .
+            ?faculty eduo:employedAt ?department .
+        }
+        GROUP BY ?department
+        ORDER BY DESC(?facultyCount)
+        LIMIT 2
+    }
+    UNION
+    {
+        SELECT ?stop (COUNT(?trip) AS ?tripCount) WHERE {
+            ?stopTime a tro:StopEvent .
+            ?stop a tro:Stop .
+            ?trip a tro:Trip .
+            ?stopTime tro:station ?stop .
+            ?stopTime tro:journey ?trip .
+        }
+        GROUP BY ?stop
+        ORDER BY DESC(?tripCount)
+        LIMIT 2
+    }
+}
+        """.strip(),
+        # Variant 3: normalized, COUNT DISTINCT trips (some stops have multiple StopTimes per trip)
+        """
+PREFIX eduo: <http://example.org/ontology/education#>
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?count ?rankType WHERE {
+    {
+        SELECT ?name ?count ("top_department" AS ?rankType) WHERE {
+            SELECT ?dept (SAMPLE(?deptName) AS ?name) (COUNT(?faculty) AS ?count) WHERE {
+                ?dept a eduo:Division .
+                ?faculty a eduo:Educator .
+                ?faculty eduo:employedAt ?dept .
+                OPTIONAL { ?dept eduo:label ?deptName }
+            }
+            GROUP BY ?dept
+            ORDER BY DESC(?count)
+            LIMIT 2
+        }
+    }
+    UNION
+    {
+        SELECT ?name ?count ("top_stop" AS ?rankType) WHERE {
+            SELECT ?stop (SAMPLE(?stopName) AS ?name) (COUNT(DISTINCT ?trip) AS ?count) WHERE {
+                ?stopTime a tro:StopEvent .
+                ?stop a tro:Stop .
+                ?trip a tro:Trip .
+                ?stopTime tro:station ?stop .
+                ?stopTime tro:journey ?trip .
+                OPTIONAL { ?stop foaf:name ?stopName }
+            }
+            GROUP BY ?stop
+            ORDER BY DESC(?count)
+            LIMIT 2
+        }
+    }
+}
+ORDER BY ?rankType DESC(?count)
+        """.strip(),
+        # Variant 4: domain-specific, COUNT DISTINCT trips
+        """
+PREFIX eduo: <http://example.org/ontology/education#>
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?department ?facultyCount ?stop ?tripCount WHERE {
+    {
+        SELECT ?department (COUNT(?faculty) AS ?facultyCount) WHERE {
+            ?department a eduo:Division .
+            ?faculty a eduo:Educator .
+            ?faculty eduo:employedAt ?department .
+        }
+        GROUP BY ?department
+        ORDER BY DESC(?facultyCount)
+        LIMIT 2
+    }
+    UNION
+    {
+        SELECT ?stop (COUNT(DISTINCT ?trip) AS ?tripCount) WHERE {
+            ?stopTime a tro:StopEvent .
+            ?stop a tro:Stop .
+            ?trip a tro:Trip .
+            ?stopTime tro:station ?stop .
+            ?stopTime tro:journey ?trip .
+        }
+        GROUP BY ?stop
+        ORDER BY DESC(?tripCount)
+        LIMIT 2
+    }
+}
+        """.strip(),
+        # Variant 5: V1 untyped (no ?faculty, ?stop, ?trip types)
+        """
+PREFIX eduo: <http://example.org/ontology/education#>
+PREFIX tro: <http://example.org/ontology/transport#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?count ?rankType WHERE {
+    {
+        SELECT ?name ?count ("top_department" AS ?rankType) WHERE {
+            SELECT ?dept (SAMPLE(?deptName) AS ?name) (COUNT(?faculty) AS ?count) WHERE {
+                ?dept a eduo:Division .
                 ?faculty eduo:employedAt ?dept .
                 OPTIONAL { ?dept eduo:label ?deptName }
             }
@@ -1268,7 +2029,7 @@ SELECT ?name ?count ?rankType WHERE {
 }
 ORDER BY ?rankType DESC(?count)
         """.strip(),
-        # Variant 2: domain-specific, COUNT without DISTINCT
+        # Variant 6: V2 untyped
         """
 PREFIX eduo: <http://example.org/ontology/education#>
 PREFIX tro: <http://example.org/ontology/transport#>
@@ -1295,7 +2056,7 @@ SELECT ?department ?facultyCount ?stop ?tripCount WHERE {
     }
 }
         """.strip(),
-        # Variant 3: normalized, COUNT DISTINCT trips (some stops have multiple StopTimes per trip)
+        # Variant 7: V3 untyped (COUNT DISTINCT)
         """
 PREFIX eduo: <http://example.org/ontology/education#>
 PREFIX tro: <http://example.org/ontology/transport#>
@@ -1330,7 +2091,7 @@ SELECT ?name ?count ?rankType WHERE {
 }
 ORDER BY ?rankType DESC(?count)
         """.strip(),
-        # Variant 4: domain-specific, COUNT DISTINCT trips
+        # Variant 8: V4 untyped (domain-specific, COUNT DISTINCT)
         """
 PREFIX eduo: <http://example.org/ontology/education#>
 PREFIX tro: <http://example.org/ontology/transport#>
@@ -1359,30 +2120,52 @@ SELECT ?department ?facultyCount ?stop ?tripCount WHERE {
         """.strip(),
     ],
     columns=[
-        [  # Query 1: normalized, COUNT
+        [  # V1: normalized, COUNT
             ColumnDef("name", RelevanceLevel.PREFERRED, "Entity name", semantic_concept="name"),
             ColumnDef("count", RelevanceLevel.PREFERRED, "Count", is_measurement=True, semantic_concept="count"),
             ColumnDef("rankType", RelevanceLevel.ACCEPTABLE, "Ranking category", semantic_concept="rankType", is_bind_label=True),
         ],
-        [  # Query 2: domain-specific, COUNT
+        [  # V2: domain-specific, COUNT
             ColumnDef("department", RelevanceLevel.PREFERRED, "Department URI", semantic_concept="department"),
             ColumnDef("facultyCount", RelevanceLevel.PREFERRED, "Faculty count", is_measurement=True, semantic_concept="facultyCount"),
             ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
             ColumnDef("tripCount", RelevanceLevel.PREFERRED, "Trip count", is_measurement=True, semantic_concept="tripCount"),
         ],
-        [  # Query 3: normalized, COUNT DISTINCT
+        [  # V3: normalized, COUNT DISTINCT
             ColumnDef("name", RelevanceLevel.PREFERRED, "Entity name", semantic_concept="name"),
             ColumnDef("count", RelevanceLevel.PREFERRED, "Count", is_measurement=True, semantic_concept="count"),
             ColumnDef("rankType", RelevanceLevel.ACCEPTABLE, "Ranking category", semantic_concept="rankType", is_bind_label=True),
         ],
-        [  # Query 4: domain-specific, COUNT DISTINCT
+        [  # V4: domain-specific, COUNT DISTINCT
+            ColumnDef("department", RelevanceLevel.PREFERRED, "Department URI", semantic_concept="department"),
+            ColumnDef("facultyCount", RelevanceLevel.PREFERRED, "Faculty count", is_measurement=True, semantic_concept="facultyCount"),
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.PREFERRED, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # V5: V1 untyped
+            ColumnDef("name", RelevanceLevel.PREFERRED, "Entity name", semantic_concept="name"),
+            ColumnDef("count", RelevanceLevel.PREFERRED, "Count", is_measurement=True, semantic_concept="count"),
+            ColumnDef("rankType", RelevanceLevel.ACCEPTABLE, "Ranking category", semantic_concept="rankType", is_bind_label=True),
+        ],
+        [  # V6: V2 untyped
+            ColumnDef("department", RelevanceLevel.PREFERRED, "Department URI", semantic_concept="department"),
+            ColumnDef("facultyCount", RelevanceLevel.PREFERRED, "Faculty count", is_measurement=True, semantic_concept="facultyCount"),
+            ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
+            ColumnDef("tripCount", RelevanceLevel.PREFERRED, "Trip count", is_measurement=True, semantic_concept="tripCount"),
+        ],
+        [  # V7: V3 untyped
+            ColumnDef("name", RelevanceLevel.PREFERRED, "Entity name", semantic_concept="name"),
+            ColumnDef("count", RelevanceLevel.PREFERRED, "Count", is_measurement=True, semantic_concept="count"),
+            ColumnDef("rankType", RelevanceLevel.ACCEPTABLE, "Ranking category", semantic_concept="rankType", is_bind_label=True),
+        ],
+        [  # V8: V4 untyped
             ColumnDef("department", RelevanceLevel.PREFERRED, "Department URI", semantic_concept="department"),
             ColumnDef("facultyCount", RelevanceLevel.PREFERRED, "Faculty count", is_measurement=True, semantic_concept="facultyCount"),
             ColumnDef("stop", RelevanceLevel.PREFERRED, "Stop URI", semantic_concept="stop"),
             ColumnDef("tripCount", RelevanceLevel.PREFERRED, "Trip count", is_measurement=True, semantic_concept="tripCount"),
         ],
     ],
-    notes="Cross-dataset: EDU + TRN. 4 variants: normalized/domain-specific × COUNT/COUNT DISTINCT trips (some stops have multiple StopTimes per trip).",
+    notes="Cross-dataset: EDU + TRN. 8 variants: normalized/domain-specific × COUNT/COUNT DISTINCT × typed/untyped.",
 )
 
 # CROSS04: Hierarchical structures comparison
@@ -1394,6 +2177,50 @@ CROSS04 = AdaptiveGroundTruth(
     datasets=["EDU", "NRG"],
     query="Show universities with their departments and companies with their operated fields.",
     sparql_queries=["""
+PREFIX eduo: <http://example.org/ontology/education#>
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT DISTINCT ?parent ?parentName ?child ?childName ?hierarchyType WHERE {
+    {
+        ?child a eduo:Division .
+        ?child eduo:partOf ?parent .
+        ?parent a eduo:Academy .
+        OPTIONAL { ?parent eduo:label ?parentName }
+        OPTIONAL { ?child eduo:label ?childName }
+        BIND("university_department" AS ?hierarchyType)
+    }
+    UNION
+    {
+        ?child a eno:Deposit .
+        ?parent a eno:Company .
+        ?child eno:activeDepositOperator ?parent .
+        OPTIONAL { ?parent eno:designation ?parentName }
+        OPTIONAL { ?child eno:designation ?childName }
+        BIND("company_field" AS ?hierarchyType)
+    }
+}
+ORDER BY ?hierarchyType ?parentName ?childName
+    """.strip(), """
+PREFIX eduo: <http://example.org/ontology/education#>
+PREFIX eno: <http://example.org/ontology/energy#>
+SELECT ?universityName ?departmentName ?companyName ?fieldName WHERE {
+    {
+        ?dept a eduo:Division .
+        ?dept eduo:partOf ?uni .
+        ?uni a eduo:Academy .
+        OPTIONAL { ?uni eduo:label ?universityName }
+        OPTIONAL { ?dept eduo:label ?departmentName }
+    }
+    UNION
+    {
+        ?field a eno:Deposit .
+        ?company a eno:Company .
+        ?field eno:activeDepositOperator ?company .
+        OPTIONAL { ?company eno:designation ?companyName }
+        OPTIONAL { ?field eno:designation ?fieldName }
+    }
+}
+ORDER BY ?universityName ?departmentName ?companyName ?fieldName
+    """.strip(), """
 PREFIX eduo: <http://example.org/ontology/education#>
 PREFIX eno: <http://example.org/ontology/energy#>
 SELECT DISTINCT ?parent ?parentName ?child ?childName ?hierarchyType WHERE {
@@ -1450,8 +2277,21 @@ ORDER BY ?universityName ?departmentName ?companyName ?fieldName
             ColumnDef("companyName", RelevanceLevel.PREFERRED, "Company name", semantic_concept="company"),
             ColumnDef("fieldName", RelevanceLevel.PREFERRED, "Field name", semantic_concept="field"),
         ],
+        [  # Query 3: V1 untyped
+            ColumnDef("parent", RelevanceLevel.ACCEPTABLE, "Parent entity URI", semantic_concept="parent"),
+            ColumnDef("parentName", RelevanceLevel.PREFERRED, "Parent name", semantic_concept="parent"),
+            ColumnDef("child", RelevanceLevel.ACCEPTABLE, "Child entity URI", semantic_concept="child"),
+            ColumnDef("childName", RelevanceLevel.PREFERRED, "Child name", semantic_concept="child"),
+            ColumnDef("hierarchyType", RelevanceLevel.ACCEPTABLE, "Hierarchy type", semantic_concept="hierarchyType", is_bind_label=True),
+        ],
+        [  # Query 4: V2 untyped
+            ColumnDef("universityName", RelevanceLevel.PREFERRED, "University name", semantic_concept="university"),
+            ColumnDef("departmentName", RelevanceLevel.PREFERRED, "Department name", semantic_concept="department"),
+            ColumnDef("companyName", RelevanceLevel.PREFERRED, "Company name", semantic_concept="company"),
+            ColumnDef("fieldName", RelevanceLevel.PREFERRED, "Field name", semantic_concept="field"),
+        ],
     ],
-    notes="Cross-dataset: EDU + NRG. Alt: UNION with domain-specific variable names.",
+    notes="Cross-dataset: EDU + NRG. Four variants: normalized/domain-specific × typed/untyped ?company.",
 )
 
 # CROSS05: Filtered entities with numeric/time conditions
@@ -1463,6 +2303,67 @@ CROSS05 = AdaptiveGroundTruth(
     datasets=["NRG", "TRN"],
     query="Find wellbores deeper than 3000 meters and trips departing before 07:00.",
     sparql_queries=["""
+PREFIX eno: <http://example.org/ontology/energy#>
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT DISTINCT ?entity ?name ?value ?filterType WHERE {
+    {
+        ?entity a eno:Borehole .
+        ?entity eno:designation ?name .
+        ?entity eno:totalDrillDepth ?value .
+        FILTER(?value > 3000)
+        BIND("deep_wellbore" AS ?filterType)
+    }
+    UNION
+    {
+        ?stopTime a tro:StopEvent .
+        ?entity a tro:Trip .
+        ?stopTime tro:journey ?entity .
+        ?stopTime tro:leaveTime ?value .
+        FILTER(?value < "07:00:00")
+        OPTIONAL { ?entity tro:abbreviation ?name }
+        BIND("early_trip" AS ?filterType)
+    }
+}
+ORDER BY ?filterType ?value
+    """.strip(), """
+PREFIX eno: <http://example.org/ontology/energy#>
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?wellbore ?wellboreName ?depth ?trip ?departureTime WHERE {
+    {
+        ?wellbore a eno:Borehole .
+        ?wellbore eno:totalDrillDepth ?depth .
+        FILTER(?depth > 3000)
+        OPTIONAL { ?wellbore eno:designation ?wellboreName }
+    }
+    UNION
+    {
+        ?stopTime a tro:StopEvent .
+        ?trip a tro:Trip .
+        ?stopTime tro:journey ?trip .
+        ?stopTime tro:leaveTime ?departureTime .
+        FILTER(?departureTime < "07:00:00")
+    }
+}
+    """.strip(), """
+PREFIX eno: <http://example.org/ontology/energy#>
+PREFIX tro: <http://example.org/ontology/transport#>
+SELECT ?wellbore ?wellboreName ?depth ?trip ?departureTime WHERE {
+    {
+        ?wellbore a eno:Borehole .
+        ?wellbore eno:finalVerticalDrillDepth ?depth .
+        FILTER(?depth > 3000)
+        OPTIONAL { ?wellbore eno:designation ?wellboreName }
+    }
+    UNION
+    {
+        ?stopTime a tro:StopEvent .
+        ?trip a tro:Trip .
+        ?stopTime tro:journey ?trip .
+        ?stopTime tro:leaveTime ?departureTime .
+        FILTER(?departureTime < "07:00:00")
+    }
+}
+    """.strip(), """
 PREFIX eno: <http://example.org/ontology/energy#>
 PREFIX tro: <http://example.org/ontology/transport#>
 SELECT DISTINCT ?entity ?name ?value ?filterType WHERE {
@@ -1522,20 +2423,40 @@ SELECT ?wellbore ?wellboreName ?depth ?trip ?departureTime WHERE {
 }
     """.strip()],
     columns=[
-        [  # Query 1: normalized ?entity/?name/?value + ?filterType
+        [  # V1: normalized ?entity/?name/?value + ?filterType
             ColumnDef("entity", RelevanceLevel.ACCEPTABLE, "Entity URI", semantic_concept="entity"),
             ColumnDef("name", RelevanceLevel.PREFERRED, "Entity name", semantic_concept="name"),
             ColumnDef("value", RelevanceLevel.PREFERRED, "Filter value (depth/time)", semantic_concept="value"),
             ColumnDef("filterType", RelevanceLevel.ACCEPTABLE, "Filter category", semantic_concept="filterType", is_bind_label=True),
         ],
-        [  # Query 2: domain-specific with totalDepth
+        [  # V2: domain-specific with totalDepth
             ColumnDef("wellbore", RelevanceLevel.PREFERRED, "Wellbore URI", semantic_concept="wellbore"),
             ColumnDef("wellboreName", RelevanceLevel.PREFERRED, "Wellbore name", semantic_concept="wellbore"),
             ColumnDef("depth", RelevanceLevel.PREFERRED, "Depth value", semantic_concept="depth"),
             ColumnDef("trip", RelevanceLevel.PREFERRED, "Trip URI", semantic_concept="trip"),
             ColumnDef("departureTime", RelevanceLevel.PREFERRED, "Departure time", semantic_concept="departureTime"),
         ],
-        [  # Query 3: domain-specific with verticalDepth
+        [  # V3: domain-specific with verticalDepth
+            ColumnDef("wellbore", RelevanceLevel.PREFERRED, "Wellbore URI", semantic_concept="wellbore"),
+            ColumnDef("wellboreName", RelevanceLevel.PREFERRED, "Wellbore name", semantic_concept="wellbore"),
+            ColumnDef("depth", RelevanceLevel.PREFERRED, "Depth value", semantic_concept="depth"),
+            ColumnDef("trip", RelevanceLevel.PREFERRED, "Trip URI", semantic_concept="trip"),
+            ColumnDef("departureTime", RelevanceLevel.PREFERRED, "Departure time", semantic_concept="departureTime"),
+        ],
+        [  # V4: V1 untyped (no ?entity a tro:Trip)
+            ColumnDef("entity", RelevanceLevel.ACCEPTABLE, "Entity URI", semantic_concept="entity"),
+            ColumnDef("name", RelevanceLevel.PREFERRED, "Entity name", semantic_concept="name"),
+            ColumnDef("value", RelevanceLevel.PREFERRED, "Filter value (depth/time)", semantic_concept="value"),
+            ColumnDef("filterType", RelevanceLevel.ACCEPTABLE, "Filter category", semantic_concept="filterType", is_bind_label=True),
+        ],
+        [  # V5: V2 untyped
+            ColumnDef("wellbore", RelevanceLevel.PREFERRED, "Wellbore URI", semantic_concept="wellbore"),
+            ColumnDef("wellboreName", RelevanceLevel.PREFERRED, "Wellbore name", semantic_concept="wellbore"),
+            ColumnDef("depth", RelevanceLevel.PREFERRED, "Depth value", semantic_concept="depth"),
+            ColumnDef("trip", RelevanceLevel.PREFERRED, "Trip URI", semantic_concept="trip"),
+            ColumnDef("departureTime", RelevanceLevel.PREFERRED, "Departure time", semantic_concept="departureTime"),
+        ],
+        [  # V6: V3 untyped
             ColumnDef("wellbore", RelevanceLevel.PREFERRED, "Wellbore URI", semantic_concept="wellbore"),
             ColumnDef("wellboreName", RelevanceLevel.PREFERRED, "Wellbore name", semantic_concept="wellbore"),
             ColumnDef("depth", RelevanceLevel.PREFERRED, "Depth value", semantic_concept="depth"),
@@ -1543,7 +2464,7 @@ SELECT ?wellbore ?wellboreName ?depth ?trip ?departureTime WHERE {
             ColumnDef("departureTime", RelevanceLevel.PREFERRED, "Departure time", semantic_concept="departureTime"),
         ],
     ],
-    notes="Cross-dataset: NRG + TRN. Alt: domain-specific vars. Both totalDepth and verticalDepth accepted.",
+    notes="Cross-dataset: NRG + TRN. Six variants: normalized/totalDepth/verticalDepth × typed/untyped ?trip.",
 )
 
 # Collect all CROSS queries

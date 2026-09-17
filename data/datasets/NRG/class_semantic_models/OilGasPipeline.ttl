@@ -1,7 +1,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix eno: <http://example.org/ontology/energy#> .
 
-eno:OilGasPipeline eno:currentStatus xsd:string ;
+eno:OilGasPipeline eno:currentCondition xsd:string ;
     eno:designation xsd:string ;
     eno:pipelineDimension xsd:decimal ;
     eno:pipelineMainGrouping xsd:string ;

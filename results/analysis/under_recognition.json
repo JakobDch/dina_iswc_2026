@@ -1,0 +1,290 @@
+{
+ "DeepSeek-V3.2|lexical": {
+  "default_recognized": 0,
+  "default_n": 30,
+  "default_missing_schema": 0,
+  "instructed_recognized": 11,
+  "instructed_n": 30,
+  "instructed_missing_schema": 0,
+  "base_false_alarms": 0,
+  "base_n": 0,
+  "base_f1_answered": null,
+  "per_question": {
+   "UNDER01": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER03": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER04": {
+    "recognized": 4,
+    "n": 6,
+    "reasons": [
+     "What type of departments are you looking for (e.g., university departments, company departments, government departments) and in which domain/context?",
+     "What defines a 'large' department? (e.g., number of employees > X, budget > Y, or some other metric)",
+     "What criteria defines a 'large' department? (e.g., number of employees, budget size, student count, etc.)"
+    ]
+   },
+   "UNDER06": {
+    "recognized": 5,
+    "n": 6,
+    "reasons": [
+     "What type of emissions and what makes them 'significant' (e.g., threshold value, ranking criteria)?",
+     "What specific type of emissions are you looking for (e.g., CO2 emissions, greenhouse gases, industrial pollutants) and from what sources (e.g., factories, vehic",
+     "What specific type of emissions are you looking for (e.g., CO2 emissions, greenhouse gas emissions, industrial emissions) and what makes them 'significant' (e.g"
+    ]
+   },
+   "UNDER08": {
+    "recognized": 2,
+    "n": 6,
+    "reasons": [
+     "What price threshold defines 'affordable'?",
+     "What price threshold defines 'affordable' products?"
+    ]
+   }
+  }
+ },
+ "DeepSeek-V3.2|semantic": {
+  "default_recognized": 0,
+  "default_n": 30,
+  "default_missing_schema": 0,
+  "instructed_recognized": 9,
+  "instructed_n": 30,
+  "instructed_missing_schema": 0,
+  "base_false_alarms": 0,
+  "base_n": 51,
+  "base_f1_answered": 0.7684184959507135,
+  "per_question": {
+   "UNDER01": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER03": {
+    "recognized": 1,
+    "n": 6,
+    "reasons": [
+     "What type of production data are you looking for (e.g., manufacturing products, energy production, agricultural output, etc.)?"
+    ]
+   },
+   "UNDER04": {
+    "recognized": 3,
+    "n": 6,
+    "reasons": [
+     "What defines a 'large department'? (e.g., number of educators, number of courses, or some other metric)",
+     "What qualifies as a 'large' department? (e.g., minimum number of people, specific size threshold)",
+     "What criteria defines a 'large' department? (e.g., number of employees, budget threshold, physical area, etc.)"
+    ]
+   },
+   "UNDER06": {
+    "recognized": 1,
+    "n": 6,
+    "reasons": [
+     "What constitutes 'significant emissions'? (e.g., threshold value, top N, or specific impact categories)"
+    ]
+   },
+   "UNDER08": {
+    "recognized": 4,
+    "n": 6,
+    "reasons": [
+     "What price threshold defines 'affordable'? (e.g., 'under $50', 'below average price', or 'cheapest 10 products')",
+     "What price threshold defines 'affordable' (e.g., under $50, under 100 EUR)?",
+     "What price threshold defines 'affordable'?"
+    ]
+   }
+  }
+ },
+ "GPT-5.4|lexical": {
+  "default_recognized": 0,
+  "default_n": 30,
+  "default_missing_schema": 0,
+  "instructed_recognized": 20,
+  "instructed_n": 30,
+  "instructed_missing_schema": 0,
+  "base_false_alarms": 0,
+  "base_n": 0,
+  "base_f1_answered": null,
+  "per_question": {
+   "UNDER01": {
+    "recognized": 6,
+    "n": 6,
+    "reasons": [
+     "Please specify what \u201ctop products\u201d means, such as top by sales, rating, popularity, price, or some other ranking criterion.",
+     "What does \u201ctop products\u201d mean in your context\u2014top by sales, price, rating, popularity, or another measure?",
+     "What does \u201ctop\u201d mean for products\u2014e.g., highest sales, highest rating, most popular, or something else?"
+    ]
+   },
+   "UNDER03": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER04": {
+    "recognized": 5,
+    "n": 6,
+    "reasons": [
+     "please specify what schema concept you mean by \u201cdepartments\u201d and what qualifies as \u201clarge\u201d (for example by number of students, staff, or another size measure).",
+     "I would have to ask which dataset/entity should represent \u201cdepartments\u201d and what criterion or threshold defines \u201clarge\u201d.",
+     "What schema concept should \u201cdepartments\u201d map to in this dataset, and by which property or threshold should \u201clarge\u201d be defined?"
+    ]
+   },
+   "UNDER06": {
+    "recognized": 3,
+    "n": 6,
+    "reasons": [
+     "Please specify what qualifies as \"significant\" emissions, such as a threshold, ranking criterion, or emission type.",
+     "please specify which dataset/domain should be used for \u201cemissions\u201d and what criterion or threshold makes an emission \u201csignificant\u201d.",
+     "I would have to ask which dataset/domain to search and what \u201csignificant\u201d means (for example, above a numeric threshold, explicitly flagged, or top-N by emissio"
+    ]
+   },
+   "UNDER08": {
+    "recognized": 6,
+    "n": 6,
+    "reasons": [
+     "What price threshold or ranking should define \"affordable\" for products (for example, a maximum price or the cheapest N products)?",
+     "What price threshold or price range should count as \"affordable\"?",
+     "Please specify what price threshold or rule should define 'affordable' products."
+    ]
+   }
+  }
+ },
+ "GPT-5.4|semantic": {
+  "default_recognized": 0,
+  "default_n": 30,
+  "default_missing_schema": 0,
+  "instructed_recognized": 22,
+  "instructed_n": 30,
+  "instructed_missing_schema": 0,
+  "base_false_alarms": 0,
+  "base_n": 51,
+  "base_f1_answered": 0.8373102802355438,
+  "per_question": {
+   "UNDER01": {
+    "recognized": 6,
+    "n": 6,
+    "reasons": [
+     "Do you mean top products by which criterion, such as highest sales, highest rating, highest price, or something else?",
+     "what does \u201ctop\u201d mean here (for example highest-rated, best-selling, or most expensive) and how many products should be shown?",
+     "Do you mean top products by rating, sales, price, popularity, or some other ranking criterion?"
+    ]
+   },
+   "UNDER03": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER04": {
+    "recognized": 6,
+    "n": 6,
+    "reasons": [
+     "what should count as \u201clarge\u201d for a department\u2014e.g., many faculty linked via eduo:employedAt, and if so, what threshold should be used?",
+     "Please specify what \u201clarge\u201d means for departments\u2014e.g. number of employees or members connected to a division, and the threshold that qualifies as large.",
+     "What threshold or rule should define a department as 'large' (for example, more than a specific number of people)?"
+    ]
+   },
+   "UNDER06": {
+    "recognized": 5,
+    "n": 6,
+    "reasons": [
+     "Please specify what counts as 'significant' emissions, such as a minimum emission value, a top-N ranking, or a specific unit/flow type.",
+     "please specify what counts as \u201csignificant\u201d emissions, such as a threshold, ranking criterion, impact category, or unit of measurement.",
+     "Please define what counts as \"significant\" emissions (for example, a numeric threshold or ranking criterion) and provide or confirm the schema element that stor"
+    ]
+   },
+   "UNDER08": {
+    "recognized": 5,
+    "n": 6,
+    "reasons": [
+     "Please specify what price threshold or rule defines 'affordable' products.",
+     "Please specify what price range or maximum price should count as \"affordable\".",
+     "Please specify what price threshold or price range should count as 'affordable'."
+    ]
+   }
+  }
+ },
+ "Qwen3.5-27B|lexical": {
+  "default_recognized": 0,
+  "default_n": 30,
+  "default_missing_schema": 9,
+  "instructed_recognized": 3,
+  "instructed_n": 30,
+  "instructed_missing_schema": 8,
+  "base_false_alarms": 0,
+  "base_n": 0,
+  "base_f1_answered": null,
+  "per_question": {
+   "UNDER01": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER03": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER04": {
+    "recognized": 2,
+    "n": 6,
+    "reasons": [
+     "What criteria defines \"large\" for departments (e.g., employee count, budget, area), and which dataset contains department information?",
+     "What criteria defines a \"large\" department (e.g., number of employees, budget, physical space) and which domain contains departments (the available schema has C"
+    ]
+   },
+   "UNDER06": {
+    "recognized": 1,
+    "n": 6,
+    "reasons": [
+     "The schema lacks any classes or properties related to emissions - I would need to ask which domain/dataset contains emissions data since the current NRG dataset"
+    ]
+   },
+   "UNDER08": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   }
+  }
+ },
+ "Qwen3.5-27B|semantic": {
+  "default_recognized": 0,
+  "default_n": 30,
+  "default_missing_schema": 0,
+  "instructed_recognized": 0,
+  "instructed_n": 30,
+  "instructed_missing_schema": 0,
+  "base_false_alarms": 0,
+  "base_n": 51,
+  "base_f1_answered": 0.8127247669253672,
+  "per_question": {
+   "UNDER01": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER03": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER04": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER06": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   },
+   "UNDER08": {
+    "recognized": 0,
+    "n": 6,
+    "reasons": []
+   }
+  }
+ }
+}

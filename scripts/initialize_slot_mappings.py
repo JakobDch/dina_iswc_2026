@@ -6,8 +6,8 @@ allowing the Mapping Optimizer to modify mappings without affecting other
 concurrent queries.
 
 Usage:
-    python scripts/initialize_slot_mappings.py --slots 5
-    python scripts/initialize_slot_mappings.py --slots 5 --clean
+    python scripts/initialize_slot_mappings.py --slots 4
+    python scripts/initialize_slot_mappings.py --slots 2 --clean
 """
 
 import argparse
@@ -19,13 +19,16 @@ MAPPINGS_SRC = PROJECT_ROOT / "mappings"
 MAPPINGS_SLOTS = PROJECT_ROOT / "mappings-slots"
 
 # Datasets that need slot isolation (used by OnTop containers)
-# BGEE removed: not part of experimental corpus, database not provisioned in MySQL
 DATASETS = [
     "edu-small",
     "trn-small",
     "nrg-small",
     "bsbm",
+    "bgee",
     "lca",
+    "edu-large",
+    "trn-large",
+    "nrg-large",
 ]
 
 
@@ -73,8 +76,8 @@ def main() -> None:
     parser.add_argument(
         "--slots",
         type=int,
-        default=5,
-        help="Number of slots to create (default: 5)",
+        default=3,
+        help="Number of slots to create (default: 3)",
     )
     parser.add_argument(
         "--clean",

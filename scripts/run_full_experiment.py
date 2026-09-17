@@ -32,7 +32,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
-# Add project root to path
+# Add project root to path.
+# Two sibling projects (dina_HITL_ESWC_2027, VKGQA_automatic_need_oriented_Modelling) are
+# installed editable and ship their own `data.queries` package; without this filter their
+# corpus is imported instead of ours (observed 2026-09-14: SYN08 text came from HITL).
+sys.path = [
+    p for p in sys.path
+    if "dina_HITL_ESWC_2027" not in p and "VKGQA_automatic_need_oriented_Modelling" not in p
+]
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from tqdm import tqdm
@@ -72,7 +79,7 @@ from src.evaluation.tiered_metrics_tuples import (
     is_trivial_value,
 )
 from src.evaluation.retrieval_ground_truth import build_schema_gt_for_query
-from src.evaluation.retrieval_metrics import calculate_retrieval_metrics
+from src.evaluation.retrieval_metrics import calculate_retrieval_metrics, calculate_retrieval_metrics_best_variant
 from src.validation.schema_graph import get_combined_schema
 # Import tiered dashboard and reevaluate functions
 # Handle both running as script and as module
@@ -122,8 +129,9 @@ LLM_MODELS = {
     "gpt4-mini": "gpt-4o-mini",
     "gpt5": "gpt-5.4",
     "qwen": "qwen3.5:27b",
-    "local_proxy": "openai/qwen3",
+    "ki4buw": "openai/qwen3",
     "qwen35-or": "openrouter/qwen/qwen3.5-27b",
+    "deepseek-or": "openrouter/deepseek/deepseek-v3.2",  # DeepSeek-V3.2 via OpenRouter (official API no longer serves V3.2, 2026-09)
     "qwen36-or": "openrouter/qwen/qwen3.6-27b",
 }
 
@@ -1636,6 +1644,7 @@ async def run_single_experiment(
         collector.success = final_query is not None and not is_unanswerable
         collector.is_unanswerable = is_unanswerable
         collector.unanswerable_reason = unanswerable_reason
+        collector.stop_kind = state.get("stop_kind", "")
 
         # Store ground truth reference (query IS the ground truth now)
         collector.ground_truth_query_id = query.id
@@ -1680,10 +1689,9 @@ async def run_single_experiment(
             schema_gt = build_schema_gt_for_query(query)
             if schema_gt.triples:
                 turtle_strings = list(collector.all_retrieved_triples) if collector.all_retrieved_triples else []
-                dataset_ids = query.datasets or [query.dataset]
-                schema = get_combined_schema(dataset_ids)
-                retrieval_result = calculate_retrieval_metrics(
-                    turtle_strings, schema, schema_gt,
+                # Candidate-wise scoring, same rule as scripts/reevaluate_tiered.py
+                retrieval_result = calculate_retrieval_metrics_best_variant(
+                    turtle_strings, query,
                 )
                 retrieval_metrics_dict = retrieval_result.to_dict()
         except Exception as e:
@@ -1738,9 +1746,15 @@ async def run_experiment(
     experiment_name: str,
     resume: bool = False,
     concurrency: int = 5,
+    serialize_datasets: bool = False,
 ) -> dict:
     """
     Run the full experiment with checkpoint/resume capability and parallel execution.
+
+    serialize_datasets: never execute two runs that target the same dataset at the same
+    time (one asyncio.Lock per dataset). Parallelism then only exists across datasets.
+    This removes the load-induced query timeouts on the shared MySQL backend (TRN/LCA)
+    that otherwise depend on which runs happen to be scheduled together.
 
     Results are saved incrementally after each run, allowing you to stop
     and resume the experiment at any time.
@@ -1882,17 +1896,40 @@ async def run_experiment(
         await slot_manager.initialize()
         logger.info(f"Slot-based container isolation enabled (concurrency={concurrency}, slots={available_slots})")
 
+    # One lock per dataset: with serialize_datasets, runs on the same dataset never overlap.
+    # The dataset lock is taken BEFORE the global semaphore so that a run waiting for its
+    # dataset never occupies one of the `concurrency` execution slots.
+    dataset_locks: dict[str, asyncio.Lock] = {}
+    if serialize_datasets:
+        logger.info("Dataset serialization enabled: at most one concurrent run per dataset")
+
+    async def _acquire_dataset_locks(query) -> list[asyncio.Lock]:
+        if not serialize_datasets:
+            return []
+        ds_ids = sorted(set(query.datasets or [query.dataset]))  # sorted -> no lock-order deadlock
+        locks = []
+        for ds in ds_ids:
+            lock = dataset_locks.setdefault(ds, asyncio.Lock())
+            await lock.acquire()
+            locks.append(lock)
+        return locks
+
     async def run_with_semaphore(run_key: str, params: dict) -> tuple[str, dict | Exception]:
         """Execute a single run with semaphore-controlled concurrency and slot isolation."""
         nonlocal checkpoint_counter
 
-        async with run_semaphore:
-            # Acquire exclusive slot for container isolation (if enabled)
-            if slot_manager is not None:
-                async with slot_manager.acquire_slot() as slot_id:
-                    return await _execute_run(run_key, params, slot_id)
-            else:
-                return await _execute_run(run_key, params, slot_id=None)
+        held = await _acquire_dataset_locks(params["query"])
+        try:
+            async with run_semaphore:
+                # Acquire exclusive slot for container isolation (if enabled)
+                if slot_manager is not None:
+                    async with slot_manager.acquire_slot() as slot_id:
+                        return await _execute_run(run_key, params, slot_id)
+                else:
+                    return await _execute_run(run_key, params, slot_id=None)
+        finally:
+            for lock in reversed(held):
+                lock.release()
 
     async def _execute_run(run_key: str, params: dict, slot_id: int | None) -> tuple[str, dict | Exception]:
         """Execute a single run with optional slot isolation."""
@@ -2367,6 +2404,13 @@ Query sets:
         help="Number of parallel runs (default: 5, adjust for API rate limits)",
     )
 
+    parser.add_argument(
+        "--serialize-datasets",
+        action="store_true",
+        help="Never run two runs on the same dataset concurrently (parallelism only across "
+             "datasets). Avoids load-dependent query timeouts on the shared MySQL backend.",
+    )
+
     args = parser.parse_args()
 
     if args.verbose:
@@ -2447,6 +2491,7 @@ Query sets:
                 experiment_name=experiment_name,
                 resume=resume_mode,
                 concurrency=args.concurrency,
+                serialize_datasets=args.serialize_datasets,
             )
         )
 

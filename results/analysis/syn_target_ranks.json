@@ -1,0 +1,812 @@
+[
+ {
+  "n": "01",
+  "ds": "EDU",
+  "min_sim": 0.319,
+  "worst_rank": 3,
+  "worst_el": "Educator",
+  "unreachable": [
+   "Educator"
+  ],
+  "n_pairs": 5,
+  "detail": [
+   {
+    "syn": "students",
+    "base": "learners",
+    "etype": "class",
+    "name": "Learner",
+    "nec": "required",
+    "sim": 0.559,
+    "rank": 2,
+    "overall": 8,
+    "base_rank": 1
+   },
+   {
+    "syn": "classes",
+    "base": "courses",
+    "etype": "class",
+    "name": "Course",
+    "nec": "required",
+    "sim": 0.734,
+    "rank": 1,
+    "overall": 1,
+    "base_rank": 1
+   },
+   {
+    "syn": "taking",
+    "base": "enrolled in",
+    "etype": "property",
+    "name": "enrolledIn",
+    "nec": "required",
+    "sim": 0.319,
+    "rank": 1,
+    "overall": 6,
+    "base_rank": 1
+   },
+   {
+    "syn": "professors",
+    "base": "educators",
+    "etype": "class",
+    "name": "Educator",
+    "nec": "required",
+    "sim": 0.571,
+    "rank": 3,
+    "overall": 33,
+    "base_rank": 1
+   },
+   {
+    "syn": "department",
+    "base": "division",
+    "etype": "class",
+    "name": "Division",
+    "nec": "required",
+    "sim": 0.6,
+    "rank": 1,
+    "overall": 1,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.7654450736912767,
+  "bs_f1": 1.0,
+  "sl_f1": 0.1111111111111111,
+  "bl_f1": 1.0
+ },
+ {
+  "n": "03",
+  "ds": "LCA",
+  "min_sim": 0.356,
+  "worst_rank": 5,
+  "worst_el": "Activity",
+  "unreachable": [],
+  "n_pairs": 1,
+  "detail": [
+   {
+    "syn": "unit processes",
+    "base": "activities",
+    "etype": "class",
+    "name": "Activity",
+    "nec": "required",
+    "sim": 0.356,
+    "rank": 5,
+    "overall": 8,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.8433437491645884,
+  "bs_f1": 0.7713522170149635,
+  "sl_f1": 0.5062228391010697,
+  "bl_f1": 0.815669886978768
+ },
+ {
+  "n": "04",
+  "ds": "TRN",
+  "min_sim": 0.272,
+  "worst_rank": 9,
+  "worst_el": "StopEvent",
+  "unreachable": [
+   "StopEvent",
+   "station"
+  ],
+  "n_pairs": 3,
+  "detail": [
+   {
+    "syn": "transit routes",
+    "base": "lines",
+    "etype": "class",
+    "name": "Line",
+    "nec": "required",
+    "sim": 0.36,
+    "rank": 2,
+    "overall": 12,
+    "base_rank": 1
+   },
+   {
+    "syn": "pass through",
+    "base": "stop events at",
+    "etype": "class",
+    "name": "StopEvent",
+    "nec": "required",
+    "sim": 0.272,
+    "rank": 9,
+    "overall": 38,
+    "base_rank": 1
+   },
+   {
+    "syn": "platforms",
+    "base": "stations",
+    "etype": "property",
+    "name": "station",
+    "nec": "required",
+    "sim": 0.571,
+    "rank": 6,
+    "overall": 10,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.9202629181309384,
+  "bs_f1": 0.8072256461245942,
+  "sl_f1": 0.25662718556119574,
+  "bl_f1": 0.9444444444444444
+ },
+ {
+  "n": "05",
+  "ds": "EDU",
+  "min_sim": 0.364,
+  "worst_rank": 7,
+  "worst_el": "Learner",
+  "unreachable": [
+   "Learner"
+  ],
+  "n_pairs": 4,
+  "detail": [
+   {
+    "syn": "people",
+    "base": "learners",
+    "etype": "class",
+    "name": "Learner",
+    "nec": "required",
+    "sim": 0.364,
+    "rank": 7,
+    "overall": 22,
+    "base_rank": 1
+   },
+   {
+    "syn": "department",
+    "base": "division",
+    "etype": "class",
+    "name": "Division",
+    "nec": "required",
+    "sim": 0.6,
+    "rank": 1,
+    "overall": 1,
+    "base_rank": 1
+   },
+   {
+    "syn": "registered for",
+    "base": "enrolled in",
+    "etype": "property",
+    "name": "enrolledIn",
+    "nec": "required",
+    "sim": 0.624,
+    "rank": 1,
+    "overall": 1,
+    "base_rank": 1
+   },
+   {
+    "syn": "classes",
+    "base": "courses",
+    "etype": "class",
+    "name": "Course",
+    "nec": "required",
+    "sim": 0.734,
+    "rank": 1,
+    "overall": 1,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 1.0,
+  "bs_f1": 1.0,
+  "sl_f1": 0.6481481481481481,
+  "bl_f1": 1.0
+ },
+ {
+  "n": "06",
+  "ds": "TRN",
+  "min_sim": 0.314,
+  "worst_rank": 8,
+  "worst_el": "StopEvent",
+  "unreachable": [
+   "StopEvent",
+   "journey"
+  ],
+  "n_pairs": 3,
+  "detail": [
+   {
+    "syn": "transit route",
+    "base": "line",
+    "etype": "class",
+    "name": "Line",
+    "nec": "required",
+    "sim": 0.314,
+    "rank": 2,
+    "overall": 10,
+    "base_rank": 1
+   },
+   {
+    "syn": "halt",
+    "base": "stop events",
+    "etype": "class",
+    "name": "StopEvent",
+    "nec": "required",
+    "sim": 0.328,
+    "rank": 8,
+    "overall": 25,
+    "base_rank": 1
+   },
+   {
+    "syn": "trip",
+    "base": "journey",
+    "etype": "property",
+    "name": "journey",
+    "nec": "required",
+    "sim": 0.522,
+    "rank": 6,
+    "overall": 7,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.4444444444444445,
+  "bs_f1": 0.3888888888888889,
+  "sl_f1": 0.3986928104575163,
+  "bl_f1": 0.3888888888888889
+ },
+ {
+  "n": "08",
+  "ds": "TRN",
+  "min_sim": 0.562,
+  "worst_rank": 13,
+  "worst_el": "station",
+  "unreachable": [
+   "station",
+   "journey"
+  ],
+  "n_pairs": 2,
+  "detail": [
+   {
+    "syn": "places",
+    "base": "stations",
+    "etype": "property",
+    "name": "station",
+    "nec": "required",
+    "sim": 0.562,
+    "rank": 13,
+    "overall": 19,
+    "base_rank": 1
+   },
+   {
+    "syn": "trips",
+    "base": "journeys",
+    "etype": "property",
+    "name": "journey",
+    "nec": "required",
+    "sim": 0.6,
+    "rank": 6,
+    "overall": 7,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 1.0,
+  "bs_f1": 1.0,
+  "sl_f1": 0.9444444444444444,
+  "bl_f1": 0.9444444444444444
+ },
+ {
+  "n": "09",
+  "ds": "EDU",
+  "min_sim": 0.415,
+  "worst_rank": 7,
+  "worst_el": "instructorOf",
+  "unreachable": [
+   "Educator",
+   "instructorOf"
+  ],
+  "n_pairs": 3,
+  "detail": [
+   {
+    "syn": "faculty",
+    "base": "educators",
+    "etype": "class",
+    "name": "Educator",
+    "nec": "required",
+    "sim": 0.415,
+    "rank": 6,
+    "overall": 39,
+    "base_rank": 1
+   },
+   {
+    "syn": "teaching",
+    "base": "instruct",
+    "etype": "property",
+    "name": "instructorOf",
+    "nec": "required",
+    "sim": 0.527,
+    "rank": 7,
+    "overall": 10,
+    "base_rank": 4
+   },
+   {
+    "syn": "upper-level classes",
+    "base": "advanced modules",
+    "etype": "class",
+    "name": "AdvancedModule",
+    "nec": "required",
+    "sim": 0.6,
+    "rank": 2,
+    "overall": 6,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.5271387269127333,
+  "bs_f1": 0.8727598566308243,
+  "sl_f1": 0.2891225293952252,
+  "bl_f1": 0.7068006036596869
+ },
+ {
+  "n": "10",
+  "ds": "BSBM",
+  "min_sim": 0.697,
+  "worst_rank": 1,
+  "worst_el": "Product",
+  "unreachable": [],
+  "n_pairs": 1,
+  "detail": [
+   {
+    "syn": "items",
+    "base": "products",
+    "etype": "class",
+    "name": "Product",
+    "nec": "required",
+    "sim": 0.697,
+    "rank": 1,
+    "overall": 1,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.7383170167601305,
+  "bs_f1": 0.6054131054131054,
+  "sl_f1": 0.7782213351075626,
+  "bl_f1": 0.6894586894586895
+ },
+ {
+  "n": "11",
+  "ds": "NRG",
+  "min_sim": 0.268,
+  "worst_rank": 10,
+  "worst_el": "extractedCrude",
+  "unreachable": [
+   "extractedCrude"
+  ],
+  "n_pairs": 2,
+  "detail": [
+   {
+    "syn": "where",
+    "base": "deposits",
+    "etype": "class",
+    "name": "Deposit",
+    "nec": "required",
+    "sim": 0.268,
+    "rank": 2,
+    "overall": 2,
+    "base_rank": 1
+   },
+   {
+    "syn": "oil pumped out",
+    "base": "extracted crude",
+    "etype": "property",
+    "name": "extractedCrude",
+    "nec": "required",
+    "sim": 0.551,
+    "rank": 10,
+    "overall": 12,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.4590068528980958,
+  "bs_f1": 0.5894398729061849,
+  "sl_f1": 0.501655077502535,
+  "bl_f1": 0.6630801215464335
+ },
+ {
+  "n": "12",
+  "ds": "EDU",
+  "min_sim": 0.292,
+  "worst_rank": 15,
+  "worst_el": "BasicModule",
+  "unreachable": [
+   "BasicModule",
+   "AdvancedModule"
+  ],
+  "n_pairs": 4,
+  "detail": [
+   {
+    "syn": "undergraduate class",
+    "base": "basic modules",
+    "etype": "class",
+    "name": "BasicModule",
+    "nec": "required",
+    "sim": 0.292,
+    "rank": 15,
+    "overall": 99,
+    "base_rank": 1
+   },
+   {
+    "syn": "graduate class",
+    "base": "advanced modules",
+    "etype": "class",
+    "name": "AdvancedModule",
+    "nec": "required",
+    "sim": 0.412,
+    "rank": 12,
+    "overall": 90,
+    "base_rank": 1
+   },
+   {
+    "syn": "who teaches it",
+    "base": "instructors",
+    "etype": "property",
+    "name": "instructorOf",
+    "nec": "required",
+    "sim": 0.582,
+    "rank": 1,
+    "overall": 1,
+    "base_rank": 1
+   },
+   {
+    "syn": "department",
+    "base": "division",
+    "etype": "class",
+    "name": "Division",
+    "nec": "required",
+    "sim": 0.6,
+    "rank": 1,
+    "overall": 1,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.692255402908503,
+  "bs_f1": 0.5161516967383515,
+  "sl_f1": 0.1588117680662668,
+  "bl_f1": 0.5115971294312527
+ },
+ {
+  "n": "13",
+  "ds": "NRG",
+  "min_sim": 0.205,
+  "worst_rank": 90,
+  "worst_el": "Deposit",
+  "unreachable": [
+   "activeDepositOperator",
+   "Deposit"
+  ],
+  "n_pairs": 3,
+  "detail": [
+   {
+    "syn": "status",
+    "base": "condition",
+    "etype": "property",
+    "name": "condition",
+    "nec": "acceptable",
+    "sim": 0.518,
+    "rank": 3,
+    "overall": 3,
+    "base_rank": 1
+   },
+   {
+    "syn": "managing company",
+    "base": "active deposit operator",
+    "etype": "property",
+    "name": "activeDepositOperator",
+    "nec": "acceptable",
+    "sim": 0.305,
+    "rank": 101,
+    "overall": 112,
+    "base_rank": 1
+   },
+   {
+    "syn": "oil field",
+    "base": "deposit",
+    "etype": "class",
+    "name": "Deposit",
+    "nec": "required",
+    "sim": 0.205,
+    "rank": 90,
+    "overall": 1674,
+    "base_rank": 1
+   }
+  ],
+  "entity": [
+   {
+    "literal": "TROLL",
+    "mention": "Troll",
+    "sim": 1.0,
+    "shared_prefix": true
+   }
+  ],
+  "ss_f1": 0.345679012345679,
+  "bs_f1": 1.0,
+  "sl_f1": 0.6666666666666666,
+  "bl_f1": 0.9259259259259259
+ },
+ {
+  "n": "14",
+  "ds": "EDU",
+  "min_sim": 0.374,
+  "worst_rank": 23,
+  "worst_el": "instructorOf",
+  "unreachable": [
+   "instructorOf"
+  ],
+  "n_pairs": 2,
+  "detail": [
+   {
+    "syn": "classes",
+    "base": "courses",
+    "etype": "class",
+    "name": "Course",
+    "nec": "required",
+    "sim": 0.734,
+    "rank": 1,
+    "overall": 1,
+    "base_rank": 1
+   },
+   {
+    "syn": "offered",
+    "base": "instructed",
+    "etype": "property",
+    "name": "instructorOf",
+    "nec": "required",
+    "sim": 0.374,
+    "rank": 23,
+    "overall": 33,
+    "base_rank": 1
+   }
+  ],
+  "entity": [
+   {
+    "literal": "University0",
+    "mention": "Uni 0",
+    "sim": 0.53,
+    "shared_prefix": true
+   }
+  ],
+  "ss_f1": 0.6696696696696697,
+  "bs_f1": 0.7728315691495119,
+  "sl_f1": 0.33333333333333337,
+  "bl_f1": 0.7190834902699309
+ },
+ {
+  "n": "16",
+  "ds": "NRG",
+  "min_sim": 0.311,
+  "worst_rank": 11,
+  "worst_el": "activeDepositOperator",
+  "unreachable": [
+   "Deposit",
+   "activeDepositOperator"
+  ],
+  "n_pairs": 2,
+  "detail": [
+   {
+    "syn": "fields",
+    "base": "deposits",
+    "etype": "class",
+    "name": "Deposit",
+    "nec": "required",
+    "sim": 0.311,
+    "rank": 8,
+    "overall": 22,
+    "base_rank": 1
+   },
+   {
+    "syn": "currently operated by",
+    "base": "active deposit operator",
+    "etype": "property",
+    "name": "activeDepositOperator",
+    "nec": "required",
+    "sim": 0.482,
+    "rank": 11,
+    "overall": 14,
+    "base_rank": 1
+   }
+  ],
+  "entity": [
+   {
+    "literal": "STATOIL",
+    "mention": "operated",
+    "sim": 0.27,
+    "shared_prefix": false
+   }
+  ],
+  "ss_f1": 0.3333333333333333,
+  "bs_f1": 0.9776119402985075,
+  "sl_f1": 0.8888888888888888,
+  "bl_f1": 0.9444444444444444
+ },
+ {
+  "n": "18",
+  "ds": "NRG",
+  "min_sim": 0.463,
+  "worst_rank": 5,
+  "worst_el": "totalDrillDepth",
+  "unreachable": [],
+  "n_pairs": 2,
+  "detail": [
+   {
+    "syn": "drill holes",
+    "base": "boreholes",
+    "etype": "class",
+    "name": "Borehole",
+    "nec": "required",
+    "sim": 0.567,
+    "rank": 1,
+    "overall": 14,
+    "base_rank": 1
+   },
+   {
+    "syn": "go deeper than",
+    "base": "total drill depth greater than",
+    "etype": "property",
+    "name": "totalDrillDepth",
+    "nec": "required",
+    "sim": 0.463,
+    "rank": 5,
+    "overall": 5,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.988381606938308,
+  "bs_f1": 1.0,
+  "sl_f1": 0.9301854807811966,
+  "bl_f1": 0.9471387002909797
+ },
+ {
+  "n": "19",
+  "ds": "TRN",
+  "min_sim": 0.46,
+  "worst_rank": 6,
+  "worst_el": "journey",
+  "unreachable": [
+   "journey"
+  ],
+  "n_pairs": 2,
+  "detail": [
+   {
+    "syn": "transit trips",
+    "base": "journeys",
+    "etype": "property",
+    "name": "journey",
+    "nec": "required",
+    "sim": 0.539,
+    "rank": 6,
+    "overall": 7,
+    "base_rank": 1
+   },
+   {
+    "syn": "departing",
+    "base": "leave times",
+    "etype": "property",
+    "name": "leaveTime",
+    "nec": "required",
+    "sim": 0.46,
+    "rank": 3,
+    "overall": 3,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.7896243824309862,
+  "bs_f1": 0.728462708376758,
+  "sl_f1": 0.6796816349086788,
+  "bl_f1": 0.6775784408501901
+ },
+ {
+  "n": "20",
+  "ds": "NRG",
+  "min_sim": 0.314,
+  "worst_rank": 722,
+  "worst_el": "activeDepositOperator",
+  "unreachable": [
+   "activeDepositOperator",
+   "Deposit"
+  ],
+  "n_pairs": 2,
+  "detail": [
+   {
+    "syn": "oil company",
+    "base": "active deposit operator",
+    "etype": "property",
+    "name": "activeDepositOperator",
+    "nec": "required",
+    "sim": 0.314,
+    "rank": 722,
+    "overall": 759,
+    "base_rank": 1
+   },
+   {
+    "syn": "production sites",
+    "base": "deposits",
+    "etype": "class",
+    "name": "Deposit",
+    "nec": "required",
+    "sim": 0.332,
+    "rank": 13,
+    "overall": 197,
+    "base_rank": 1
+   }
+  ],
+  "entity": [],
+  "ss_f1": 0.2015460550773322,
+  "bs_f1": 0.9393513357981587,
+  "sl_f1": 0.7515507372594703,
+  "bl_f1": 0.8526371408593949
+ },
+ {
+  "n": "21",
+  "ds": "NRG",
+  "min_sim": 0.311,
+  "worst_rank": 16,
+  "worst_el": "activeDepositOperator",
+  "unreachable": [
+   "Deposit",
+   "activeDepositOperator"
+  ],
+  "n_pairs": 2,
+  "detail": [
+   {
+    "syn": "fields",
+    "base": "deposits",
+    "etype": "class",
+    "name": "Deposit",
+    "nec": "required",
+    "sim": 0.311,
+    "rank": 8,
+    "overall": 22,
+    "base_rank": 1
+   },
+   {
+    "syn": "currently manage",
+    "base": "operated",
+    "etype": "property",
+    "name": "activeDepositOperator",
+    "nec": "required",
+    "sim": 0.483,
+    "rank": 16,
+    "overall": 18,
+    "base_rank": 12
+   }
+  ],
+  "entity": [
+   {
+    "literal": "Det norske oljeselskap",
+    "mention": "does Aker BP",
+    "sim": 0.4,
+    "shared_prefix": false
+   }
+  ],
+  "ss_f1": 0.20634920634920634,
+  "bs_f1": 1.0,
+  "sl_f1": 0.26190476190476186,
+  "bl_f1": 1.0
+ }
+]

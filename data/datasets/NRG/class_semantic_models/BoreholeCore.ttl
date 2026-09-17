@@ -1,0 +1,12 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:BoreholeCore eno:coreIntervalBottom xsd:decimal ;
+    eno:coreIntervalTop xsd:decimal ;
+    eno:coreIntervalUOM xsd:string ;
+    eno:coreNo xsd:integer ;
+    eno:coresTotalLength xsd:decimal ;
+    eno:dateSynchronized xsd:date ;
+    eno:isCoreSampleAvailable xsd:string ;
+    eno:coreForBorehole eno:PlatformBorehole ;
+    eno:coreForBorehole eno:Borehole .

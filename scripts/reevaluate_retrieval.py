@@ -17,14 +17,26 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to path.
+# Two sibling projects (dina_HITL_ESWC_2027, VKGQA_automatic_need_oriented_Modelling)
+# are installed editable into the user site-packages and ship their own
+# `data.queries` package. Their .pth entries are processed by `site` before this
+# line runs, so they must be dropped explicitly or the wrong corpus is imported.
+_ROOT = str(Path(__file__).parent.parent)
+sys.path = [
+    p for p in sys.path
+    if "dina_HITL_ESWC_2027" not in p and "VKGQA_automatic_need_oriented_Modelling" not in p
+]
+sys.path.insert(0, _ROOT)
 
 from tqdm import tqdm
 
 from data.queries.experimental_corpus import get_experimental_query
 from src.evaluation.retrieval_ground_truth import build_schema_gt_for_query
-from src.evaluation.retrieval_metrics import calculate_retrieval_metrics
+from src.evaluation.retrieval_metrics import (
+    calculate_retrieval_metrics,
+    calculate_retrieval_metrics_best_variant,
+)
 from src.config import RESULTS_DIR
 from src.validation.schema_graph import get_combined_schema
 
@@ -98,7 +110,8 @@ def reevaluate_retrieval(
             skipped += 1
             continue
 
-        # Build schema-aware GT (triple level)
+        # Build schema-aware GT (triple level). Kept for the stored record; the
+        # score itself is taken per variant, see below.
         schema_gt = build_schema_gt_for_query(gt_query)
         if not schema_gt.triples:
             skipped += 1
@@ -110,8 +123,9 @@ def reevaluate_retrieval(
         # Get retrieved triples
         turtle_strings = trace.get(triples_field, [])
 
-        # Calculate schema-aware metrics
-        metrics = calculate_retrieval_metrics(turtle_strings, schema, schema_gt)
+        # Score against each admissible reading and keep the best, rather than
+        # against the union of all of them (see the function's docstring).
+        metrics = calculate_retrieval_metrics_best_variant(turtle_strings, gt_query)
         metrics_dict = metrics.to_dict()
 
         trace_name = trace_file.stem

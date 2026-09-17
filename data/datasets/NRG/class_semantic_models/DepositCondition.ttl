@@ -1,0 +1,8 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix eno: <http://example.org/ontology/energy#> .
+
+eno:DepositCondition eno:condition xsd:string ;
+    eno:dateConditionFrom xsd:date ;
+    eno:dateConditionTo xsd:date ;
+    eno:dateSynchronized xsd:date ;
+    eno:conditionForDeposit eno:Deposit .

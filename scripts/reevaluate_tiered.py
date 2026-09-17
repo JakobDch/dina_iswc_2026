@@ -17,6 +17,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -35,7 +36,7 @@ from data.queries.use_case_queries_tiered_tuples import (
     ValueSet,
 )
 from src.evaluation.retrieval_ground_truth import build_schema_gt_for_query
-from src.evaluation.retrieval_metrics import calculate_retrieval_metrics
+from src.evaluation.retrieval_metrics import calculate_retrieval_metrics, calculate_retrieval_metrics_best_variant
 from src.validation.schema_graph import get_combined_schema
 from src.evaluation.tiered_metrics_tuples import (
     TieredMetricsResult,
@@ -45,6 +46,7 @@ from src.evaluation.tiered_metrics_tuples import (
     generate_null_variants,
     calculate_adaptive_metrics,
     calculate_schema_metrics,
+    calculate_schema_metrics_from_mapping,
     extract_result_values,
     extract_llm_column_values,
     normalize_value,
@@ -401,65 +403,173 @@ def evaluate_trace_adaptive(
         for col in gt_cols
     ]
 
-    # Calculate adaptive metrics directly from cached values (fast path)
-    # This avoids re-iterating through all tuples which is slow for LARGE queries
+    # Calculate adaptive metrics from cached values (fast path).
+    # Mirrors evaluate_adaptive_ground_truth(): try ALL GT variants, pick by best
+    # schema F1 (data F1 as tie-break), and report that variant's metrics.
     if cached_gt and cached_gt.get("success"):
-        # Use cached column_values if available (much faster for LARGE queries)
-        if "column_values" in cached_gt:
-            column_values = [set(cv) for cv in cached_gt["column_values"]]
-        else:
-            # Fallback: Build column_values from cached tuples
-            num_cols = len(gt_col_names)
-            column_values: list[set[str]] = [set() for _ in range(num_cols)]
-            for gt_tuple in gt_tuples:
-                for col_idx in range(min(len(gt_tuple), num_cols)):
-                    val = gt_tuple[col_idx]
-                    if val and val.strip():
-                        column_values[col_idx].add(val)
+        cached_variants = cached_gt.get("query_variants", [])
+        dataset_id = ground_truth.dataset if hasattr(ground_truth, "dataset") else None
+        llm_col_vals = extract_llm_column_values(generated_results)
+        llm_col_list = [k for k in (generated_results[0].keys() if generated_results else []) if not k.startswith("_")]
 
-        # Get measurement column indices
-        measurement_columns = ground_truth.get_measurement_column_indices()
+        best_metrics: AdaptiveMetricsResult | None = None
+        best_key = (-1.0, -1.0, -1.0)
+        best_vi_idx = 0
+        # Track winning variant's data for dashboard display
+        best_vi_gt_tuples = gt_tuples
+        best_vi_gt_col_names = gt_col_names
 
-        # Calculate metrics directly (no endpoint calls needed)
+        num_variants = max(len(ground_truth.sparql_queries), len(cached_variants), 1)
+
         try:
-            # Get GT SPARQL and dataset for signature extraction
-            gt_sparql = ground_truth.sparql_queries[0] if ground_truth.sparql_queries else None
-            dataset_id = ground_truth.dataset if hasattr(ground_truth, "dataset") else None
+            for vi in range(num_variants):
+                # --- Load variant-specific cached data ---
+                if vi < len(cached_variants) and cached_variants[vi].get("success"):
+                    vi_cached = cached_variants[vi]
+                    vi_gt_tuples = {tuple(t) for t in vi_cached.get("gt_tuples", [])}
+                    vi_gt_col_names = vi_cached.get("gt_columns", [])
+                    vi_columns_with_nulls = vi_cached.get("null_columns", [])
+                    vi_values_by_level = vi_cached.get("values_by_level", {})
+                elif vi == 0:
+                    # Fallback to top-level cached data
+                    vi_gt_tuples = gt_tuples
+                    vi_gt_col_names = gt_col_names
+                    vi_columns_with_nulls = columns_with_nulls
+                    vi_values_by_level = cached_gt.get("values_by_level", {})
+                else:
+                    continue
 
-            metrics = calculate_adaptive_metrics(
-                llm_results=generated_results,
-                gt_tuples=gt_tuples,
-                columns_with_nulls=columns_with_nulls,
-                essential_values=essential_values,
-                preferred_values=preferred_values,
-                acceptable_values=acceptable_values,
-                column_values=column_values,
-                measurement_columns=measurement_columns,
-                gt_sparql=gt_sparql,
-                llm_sparql=llm_sparql,
-                gt_col_names=gt_col_names,
-                dataset_id=dataset_id,
-            )
-            metrics.llm_columns = [k for k in (generated_results[0].keys() if generated_results else []) if not k.startswith("_")]
+                if not vi_gt_tuples:
+                    continue
 
-            # Calculate schema metrics (same as in _evaluate_single_query)
-            llm_col_vals = extract_llm_column_values(generated_results)
-            gt_cols_for_schema = ground_truth.get_columns_for_query(0)
-            gt_col_levels = [col.level for col in gt_cols_for_schema]
-            gt_col_is_measurement = [col.is_measurement for col in gt_cols_for_schema]
-            gt_semantic_concepts = [col.semantic_concept for col in gt_cols_for_schema]
+                # --- BIND-label column filtering (mirrors _evaluate_single_query) ---
+                try:
+                    vi_cols_obj = ground_truth.get_columns_for_query(vi)
+                except (IndexError, Exception):
+                    if vi == 0:
+                        vi_cols_obj = ground_truth.get_columns_for_query(0)
+                    else:
+                        continue
 
-            (
-                metrics.schema_recall, metrics.schema_precision,
-                metrics.schema_expected_count, metrics.schema_matched_count,
-                metrics.schema_llm_columns, metrics.schema_llm_matched,
-            ) = calculate_schema_metrics(
-                llm_col_vals, column_values, gt_col_levels, gt_col_is_measurement, gt_semantic_concepts
-            )
+                bind_label_indices = {
+                    i for i, col in enumerate(vi_cols_obj) if getattr(col, "is_bind_label", False)
+                }
 
-            if metrics.schema_recall + metrics.schema_precision > 0:
-                metrics.schema_f1 = (2 * metrics.schema_recall * metrics.schema_precision /
-                                    (metrics.schema_recall + metrics.schema_precision))
+                vi_essential = set(vi_values_by_level.get("PREFERRED", []))
+                vi_preferred = vi_essential
+                vi_acceptable = set(vi_values_by_level.get("ACCEPTABLE", []))
+
+                if bind_label_indices:
+                    keep_indices = [i for i in range(len(vi_cols_obj)) if i not in bind_label_indices]
+
+                    # Remove BIND-label values from level detection sets
+                    bind_values = set()
+                    for t in vi_gt_tuples:
+                        for i in bind_label_indices:
+                            if i < len(t) and t[i]:
+                                bind_values.add(t[i])
+                    vi_acceptable = vi_acceptable - bind_values
+
+                    # Project out BIND-label columns from GT tuples
+                    vi_gt_tuples = {tuple(t[i] for i in keep_indices) for t in vi_gt_tuples}
+                    vi_gt_col_names = [vi_gt_col_names[i] for i in keep_indices]
+
+                    # Remap columns_with_nulls to new indices
+                    old_to_new = {old: new for new, old in enumerate(keep_indices)}
+                    vi_columns_with_nulls = [old_to_new[c] for c in vi_columns_with_nulls if c in old_to_new]
+
+                    # Filter column definitions
+                    vi_cols_obj = [vi_cols_obj[i] for i in keep_indices]
+
+                # Build column_values for this variant
+                vi_num_cols = len(vi_gt_col_names)
+                vi_column_values: list[set[str]] = [set() for _ in range(vi_num_cols)]
+                for t in vi_gt_tuples:
+                    for col_idx in range(min(len(t), vi_num_cols)):
+                        val = t[col_idx]
+                        if val and val.strip():
+                            vi_column_values[col_idx].add(val)
+
+                vi_gt_sparql = ground_truth.sparql_queries[vi] if vi < len(ground_truth.sparql_queries) else None
+                vi_measurement = ground_truth.get_measurement_column_indices(query_index=vi)
+
+                # --- Tuple metrics for this variant ---
+                vi_metrics = calculate_adaptive_metrics(
+                    llm_results=generated_results,
+                    gt_tuples=vi_gt_tuples,
+                    columns_with_nulls=vi_columns_with_nulls,
+                    essential_values=vi_essential,
+                    preferred_values=vi_preferred,
+                    acceptable_values=vi_acceptable,
+                    column_values=vi_column_values,
+                    measurement_columns=vi_measurement,
+                    gt_sparql=vi_gt_sparql,
+                    llm_sparql=llm_sparql,
+                    gt_col_names=vi_gt_col_names,
+                    dataset_id=dataset_id,
+                )
+                vi_metrics.llm_columns = llm_col_list
+
+                # --- Schema metrics for this variant ---
+                # vi_cols_obj already filtered (BIND-label columns removed above)
+                vi_levels = [col.level for col in vi_cols_obj]
+                vi_is_measurement = [col.is_measurement for col in vi_cols_obj]
+                vi_concepts = [col.semantic_concept for col in vi_cols_obj]
+
+                # Schema metrics on the same 1:1 pairing the data metrics use.
+                vi_schema = calculate_schema_metrics_from_mapping(
+                    vi_metrics.column_mapping, len(llm_col_vals), vi_levels, vi_concepts,
+                )
+                vi_metrics.schema_recall = vi_schema[0]
+                vi_metrics.schema_precision = vi_schema[1]
+                vi_metrics.schema_expected_count = vi_schema[2]
+                vi_metrics.schema_matched_count = vi_schema[3]
+                vi_metrics.schema_llm_columns = vi_schema[4]
+                vi_metrics.schema_llm_matched = vi_schema[5]
+                if vi_metrics.schema_recall + vi_metrics.schema_precision > 0:
+                    vi_metrics.schema_f1 = (2 * vi_metrics.schema_recall * vi_metrics.schema_precision /
+                                           (vi_metrics.schema_recall + vi_metrics.schema_precision))
+
+                import os as _os
+                # Optional audit (EVAL_VARIANT_LOG=<file>): per variant, log schema F1 and
+                # data F1 so that selection rules can be compared offline.
+                _vlog = _os.environ.get("EVAL_VARIANT_LOG")
+                if _vlog:
+                    with open(_vlog, "a", encoding="utf-8") as _fh:
+                        _fh.write(f"{trace.get('run_id', '')}\t{ground_truth.query_id}\t"
+                                  f"{trace.get('approach', '')}\t{vi}\t"
+                                  f"{vi_metrics.schema_f1:.4f}\t{vi_metrics.best_f1:.4f}\n")
+
+                # --- Track best reading: schema recall first, then data F1, then
+                # schema precision (same rule as evaluate_adaptive_ground_truth and
+                # Eq. candidate-selection in the paper). Recall says which reading's
+                # required concepts the system covers; precision is left out because
+                # whether a surplus system column finds a partner depends only on
+                # which optional columns a reading happens to list.
+                _key = (vi_metrics.schema_recall, vi_metrics.best_f1, vi_metrics.schema_precision)
+                if _key > best_key:
+                    best_key = _key
+                    best_metrics = vi_metrics
+                    best_vi_idx = vi
+                    best_vi_gt_tuples = vi_gt_tuples
+                    best_vi_gt_col_names = vi_gt_col_names
+
+            if best_metrics is not None:
+                metrics = best_metrics
+                # Update outer vars so dashboard display matches winning variant
+                gt_tuples = best_vi_gt_tuples
+                gt_col_names = best_vi_gt_col_names
+                if best_vi_idx != 0:
+                    try:
+                        gt_cols = ground_truth.get_columns_for_query(best_vi_idx)
+                        gt_columns_full = [
+                            {"var_name": col.var_name, "level": col.level.name, "description": col.description}
+                            for col in gt_cols
+                        ]
+                    except (IndexError, Exception):
+                        pass  # Keep variant 0 columns
+            else:
+                metrics = AdaptiveMetricsResult()
         except Exception as e:
             print(f"  Error in cached adaptive evaluation: {e}")
             metrics = AdaptiveMetricsResult()
@@ -806,10 +916,10 @@ def reevaluate_experiment(experiment_name: str, use_adaptive: bool = False) -> d
             schema_gt = build_schema_gt_for_query(ground_truth)
             if schema_gt.triples:
                 turtle_strings = trace.get("all_retrieved_triples", [])
-                dataset_ids = ground_truth.datasets or [ground_truth.dataset]
-                schema = get_combined_schema(dataset_ids)
-                retrieval_result = calculate_retrieval_metrics(
-                    turtle_strings, schema, schema_gt,
+                # Candidate-wise: best admissible reading for recall/path coherence,
+                # union of readings for precision (see calculate_retrieval_metrics_best_variant).
+                retrieval_result = calculate_retrieval_metrics_best_variant(
+                    turtle_strings, ground_truth,
                 )
                 retrieval_metrics_dict = retrieval_result.to_dict()
         except Exception as e:
@@ -879,8 +989,11 @@ def reevaluate_experiment(experiment_name: str, use_adaptive: bool = False) -> d
         results["summary"]["by_query_set"][qset] = calc_adaptive_summary(mlist)
 
     output_file = experiment_dir / "adaptive_evaluation.json"
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2, default=str)
+    if os.environ.get("EVAL_NO_WRITE"):
+        print("EVAL_NO_WRITE set: adaptive_evaluation.json left unchanged")
+    else:
+        with open(output_file, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2, default=str)
 
     print(f"\nResults saved to: {output_file}")
     print_adaptive_summary(results)

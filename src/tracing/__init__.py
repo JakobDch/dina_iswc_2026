@@ -1,4 +1,4 @@
-"""Tracing package for agent debugging and experiment tracing."""
+"""Tracing package for DINA agent debugging and experiment tracing."""
 
 from src.tracing.console import RichTraceConsole
 from src.tracing.models import TraceEvent, TraceEventType

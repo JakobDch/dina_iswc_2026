@@ -1,4 +1,4 @@
-"""Concurrency utilities for the agentic experiment."""
+"""Concurrency utilities for the DINA agent experiment."""
 
 from src.concurrency.slot_manager import SlotManager, get_slot_manager
 

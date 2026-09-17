@@ -1,0 +1,723 @@
+{
+ "experiment_name": "chess_heterogeneous_sql_on_consolidated",
+ "evaluation_mode": "adaptive",
+ "evaluated_traces": 17,
+ "summary": {
+  "overall": {
+   "count": 17,
+   "best_recall_mean": 0.5954833247441655,
+   "best_precision_mean": 0.5498950894500478,
+   "best_f1_mean": 0.563130383567695,
+   "schema_recall_mean": 0.6568627450980392,
+   "schema_precision_mean": 0.6960784313725491,
+   "schema_f1_mean": 0.6450980392156863,
+   "llm_row_count_mean": 359.94117647058823
+  },
+  "by_approach": {
+   "text2sql_chess": {
+    "count": 17,
+    "best_recall_mean": 0.5954833247441655,
+    "best_precision_mean": 0.5498950894500478,
+    "best_f1_mean": 0.563130383567695,
+    "schema_recall_mean": 0.6568627450980392,
+    "schema_precision_mean": 0.6960784313725491,
+    "schema_f1_mean": 0.6450980392156863,
+    "llm_row_count_mean": 359.94117647058823
+   }
+  },
+  "by_query_set": {
+   "SYN": {
+    "count": 17,
+    "best_recall_mean": 0.5954833247441655,
+    "best_precision_mean": 0.5498950894500478,
+    "best_f1_mean": 0.563130383567695,
+    "schema_recall_mean": 0.6568627450980392,
+    "schema_precision_mean": 0.6960784313725491,
+    "schema_f1_mean": 0.6450980392156863,
+    "llm_row_count_mean": 359.94117647058823
+   }
+  }
+ },
+ "total_traces": 17,
+ "traces": {
+  "SYN01_text2sql_chess_a2d08917": {
+   "query_id": "SYN01",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "EDU",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 1.0,
+    "best_precision": 1.0,
+    "best_f1": 1.0,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": true,
+    "essential_matches": 764,
+    "preferred_matches": 764,
+    "acceptable_matches": 34,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 1566,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 1566,
+    "variants_evaluated": 1,
+    "llm_row_count": 1566,
+    "schema_recall": 1.0,
+    "schema_precision": 1.0,
+    "schema_f1": 1.0,
+    "schema_expected_count": 2,
+    "schema_matched_count": 2,
+    "schema_llm_columns": 3,
+    "schema_llm_matched": 3,
+    "column_mapping": [
+     {
+      "gt_col_idx": 1,
+      "llm_col_name": "student_name"
+     },
+     {
+      "gt_col_idx": 3,
+      "llm_col_name": "class_name"
+     },
+     {
+      "gt_col_idx": 5,
+      "llm_col_name": "professor_name"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN03_text2sql_chess_df749077": {
+   "query_id": "SYN03",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "LCA",
+   "success": false,
+   "adaptive_metrics": {
+    "best_recall": 0.0,
+    "best_precision": 0.0,
+    "best_f1": 0.0,
+    "essential_active": false,
+    "preferred_active": false,
+    "acceptable_active": false,
+    "essential_matches": 0,
+    "preferred_matches": 0,
+    "acceptable_matches": 0,
+    "best_recall_variant": "no_valid_columns",
+    "best_recall_gt_size": 0,
+    "best_precision_variant": "no_valid_columns",
+    "best_precision_gt_size": 0,
+    "variants_evaluated": 0,
+    "llm_row_count": 0,
+    "schema_recall": 0.0,
+    "schema_precision": 0.0,
+    "schema_f1": 0.0,
+    "schema_expected_count": 2,
+    "schema_matched_count": 0,
+    "schema_llm_columns": 0,
+    "schema_llm_matched": 0,
+    "column_mapping": [],
+    "column_mapping_source": "value_overlap",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN04_text2sql_chess_82c3bd19": {
+   "query_id": "SYN04",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "TRN",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 0.5147058823529411,
+    "best_precision": 0.5147058823529411,
+    "best_f1": 0.5147058823529411,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 226,
+    "preferred_matches": 226,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 272,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 272,
+    "variants_evaluated": 1,
+    "llm_row_count": 272,
+    "schema_recall": 1.0,
+    "schema_precision": 1.0,
+    "schema_f1": 1.0,
+    "schema_expected_count": 2,
+    "schema_matched_count": 2,
+    "schema_llm_columns": 2,
+    "schema_llm_matched": 2,
+    "column_mapping": [
+     {
+      "gt_col_idx": 4,
+      "llm_col_name": "stop_name"
+     },
+     {
+      "gt_col_idx": 2,
+      "llm_col_name": "route_long_name"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN05_text2sql_chess_761b6150": {
+   "query_id": "SYN05",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "EDU",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 1.0,
+    "best_precision": 1.0,
+    "best_f1": 1.0,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 2,
+    "preferred_matches": 2,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 1,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 1,
+    "variants_evaluated": 1,
+    "llm_row_count": 1,
+    "schema_recall": 0.6666666666666666,
+    "schema_precision": 0.6666666666666666,
+    "schema_f1": 0.6666666666666666,
+    "schema_expected_count": 3,
+    "schema_matched_count": 2,
+    "schema_llm_columns": 3,
+    "schema_llm_matched": 2,
+    "column_mapping": [
+     {
+      "gt_col_idx": 1,
+      "llm_col_name": "name"
+     },
+     {
+      "gt_col_idx": 2,
+      "llm_col_name": "registered_people_count"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN06_text2sql_chess_4d9e3294": {
+   "query_id": "SYN06",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "TRN",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 0.5,
+    "best_precision": 0.5,
+    "best_f1": 0.5,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 15,
+    "preferred_matches": 15,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 12,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 12,
+    "variants_evaluated": 1,
+    "llm_row_count": 12,
+    "schema_recall": 1.0,
+    "schema_precision": 0.6666666666666666,
+    "schema_f1": 0.8,
+    "schema_expected_count": 2,
+    "schema_matched_count": 2,
+    "schema_llm_columns": 3,
+    "schema_llm_matched": 2,
+    "column_mapping": [
+     {
+      "gt_col_idx": 3,
+      "llm_col_name": "total_halts"
+     },
+     {
+      "gt_col_idx": 2,
+      "llm_col_name": "route_long_name"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN08_text2sql_chess_cb777c59": {
+   "query_id": "SYN08",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "TRN",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 0.8,
+    "best_precision": 0.8,
+    "best_f1": 0.8000000000000002,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 8,
+    "preferred_matches": 8,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 10,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 10,
+    "variants_evaluated": 1,
+    "llm_row_count": 10,
+    "schema_recall": 1.0,
+    "schema_precision": 1.0,
+    "schema_f1": 1.0,
+    "schema_expected_count": 1,
+    "schema_matched_count": 1,
+    "schema_llm_columns": 1,
+    "schema_llm_matched": 1,
+    "column_mapping": [
+     {
+      "gt_col_idx": 0,
+      "llm_col_name": "stop_name"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN09_text2sql_chess_c20b7ace": {
+   "query_id": "SYN09",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "EDU",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 1.0,
+    "best_precision": 0.6,
+    "best_f1": 0.7499999999999999,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 21,
+    "preferred_matches": 21,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 21,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 21,
+    "variants_evaluated": 1,
+    "llm_row_count": 35,
+    "schema_recall": 1.0,
+    "schema_precision": 1.0,
+    "schema_f1": 1.0,
+    "schema_expected_count": 1,
+    "schema_matched_count": 1,
+    "schema_llm_columns": 1,
+    "schema_llm_matched": 1,
+    "column_mapping": [
+     {
+      "gt_col_idx": 1,
+      "llm_col_name": "name"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN10_text2sql_chess_bab5cbcb": {
+   "query_id": "SYN10",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "BSBM",
+   "success": false,
+   "adaptive_metrics": {
+    "best_recall": 0.0,
+    "best_precision": 0.0,
+    "best_f1": 0.0,
+    "essential_active": false,
+    "preferred_active": false,
+    "acceptable_active": false,
+    "essential_matches": 0,
+    "preferred_matches": 0,
+    "acceptable_matches": 0,
+    "best_recall_variant": "no_valid_columns",
+    "best_recall_gt_size": 0,
+    "best_precision_variant": "no_valid_columns",
+    "best_precision_gt_size": 0,
+    "variants_evaluated": 0,
+    "llm_row_count": 0,
+    "schema_recall": 0.0,
+    "schema_precision": 0.0,
+    "schema_f1": 0.0,
+    "schema_expected_count": 2,
+    "schema_matched_count": 0,
+    "schema_llm_columns": 0,
+    "schema_llm_matched": 0,
+    "column_mapping": [],
+    "column_mapping_source": "value_overlap",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN11_text2sql_chess_0e3b305e": {
+   "query_id": "SYN11",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "NRG",
+   "success": false,
+   "adaptive_metrics": {
+    "best_recall": 0.0,
+    "best_precision": 0.0,
+    "best_f1": 0.0,
+    "essential_active": false,
+    "preferred_active": false,
+    "acceptable_active": false,
+    "essential_matches": 0,
+    "preferred_matches": 0,
+    "acceptable_matches": 0,
+    "best_recall_variant": "no_valid_columns",
+    "best_recall_gt_size": 0,
+    "best_precision_variant": "no_valid_columns",
+    "best_precision_gt_size": 0,
+    "variants_evaluated": 0,
+    "llm_row_count": 0,
+    "schema_recall": 0.0,
+    "schema_precision": 0.0,
+    "schema_f1": 0.0,
+    "schema_expected_count": 1,
+    "schema_matched_count": 0,
+    "schema_llm_columns": 0,
+    "schema_llm_matched": 0,
+    "column_mapping": [],
+    "column_mapping_source": "value_overlap",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN12_text2sql_chess_8905eee4": {
+   "query_id": "SYN12",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "EDU",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 0.0,
+    "best_precision": 0.0,
+    "best_f1": 0.0,
+    "essential_active": false,
+    "preferred_active": false,
+    "acceptable_active": false,
+    "essential_matches": 0,
+    "preferred_matches": 0,
+    "acceptable_matches": 2,
+    "best_recall_variant": "no_valid_columns",
+    "best_recall_gt_size": 0,
+    "best_precision_variant": "no_valid_columns",
+    "best_precision_gt_size": 0,
+    "variants_evaluated": 0,
+    "llm_row_count": 0,
+    "schema_recall": 0.0,
+    "schema_precision": 1.0,
+    "schema_f1": 0.0,
+    "schema_expected_count": 2,
+    "schema_matched_count": 0,
+    "schema_llm_columns": 1,
+    "schema_llm_matched": 1,
+    "column_mapping": [],
+    "column_mapping_source": "value_overlap",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN13_text2sql_chess_e9234767": {
+   "query_id": "SYN13",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "NRG",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 1.0,
+    "best_precision": 1.0,
+    "best_f1": 1.0,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 2,
+    "preferred_matches": 2,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 1,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 1,
+    "variants_evaluated": 1,
+    "llm_row_count": 1,
+    "schema_recall": 1.0,
+    "schema_precision": 1.0,
+    "schema_f1": 1.0,
+    "schema_expected_count": 2,
+    "schema_matched_count": 2,
+    "schema_llm_columns": 2,
+    "schema_llm_matched": 2,
+    "column_mapping": [
+     {
+      "gt_col_idx": 2,
+      "llm_col_name": "fldCurrentActivitySatus"
+     },
+     {
+      "gt_col_idx": 4,
+      "llm_col_name": "cmpLongName"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN14_text2sql_chess_f88831f9": {
+   "query_id": "SYN14",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "EDU",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 1.0,
+    "best_precision": 1.0,
+    "best_f1": 1.0,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 128,
+    "preferred_matches": 128,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 128,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 128,
+    "variants_evaluated": 1,
+    "llm_row_count": 128,
+    "schema_recall": 1.0,
+    "schema_precision": 1.0,
+    "schema_f1": 1.0,
+    "schema_expected_count": 1,
+    "schema_matched_count": 1,
+    "schema_llm_columns": 1,
+    "schema_llm_matched": 1,
+    "column_mapping": [
+     {
+      "gt_col_idx": 1,
+      "llm_col_name": "name"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN16_text2sql_chess_038b92f3": {
+   "query_id": "SYN16",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "NRG",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 0.8085106382978723,
+    "best_precision": 0.8085106382978723,
+    "best_f1": 0.8085106382978723,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 38,
+    "preferred_matches": 38,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 47,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 47,
+    "variants_evaluated": 1,
+    "llm_row_count": 47,
+    "schema_recall": 1.0,
+    "schema_precision": 1.0,
+    "schema_f1": 1.0,
+    "schema_expected_count": 1,
+    "schema_matched_count": 1,
+    "schema_llm_columns": 1,
+    "schema_llm_matched": 1,
+    "column_mapping": [
+     {
+      "gt_col_idx": 1,
+      "llm_col_name": "fldName"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN18_text2sql_chess_dc1d2d02": {
+   "query_id": "SYN18",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "NRG",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 1.0,
+    "best_precision": 1.0,
+    "best_f1": 1.0,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 4024,
+    "preferred_matches": 4024,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 4024,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 4024,
+    "variants_evaluated": 1,
+    "llm_row_count": 4024,
+    "schema_recall": 1.0,
+    "schema_precision": 1.0,
+    "schema_f1": 1.0,
+    "schema_expected_count": 1,
+    "schema_matched_count": 1,
+    "schema_llm_columns": 1,
+    "schema_llm_matched": 1,
+    "column_mapping": [
+     {
+      "gt_col_idx": 1,
+      "llm_col_name": "wlbWellboreName"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN19_text2sql_chess_599f506d": {
+   "query_id": "SYN19",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "TRN",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 0.0,
+    "best_precision": 0.0,
+    "best_f1": 0.0,
+    "essential_active": false,
+    "preferred_active": false,
+    "acceptable_active": false,
+    "essential_matches": 0,
+    "preferred_matches": 0,
+    "acceptable_matches": 0,
+    "best_recall_variant": "no_valid_columns",
+    "best_recall_gt_size": 0,
+    "best_precision_variant": "no_valid_columns",
+    "best_precision_gt_size": 0,
+    "variants_evaluated": 0,
+    "llm_row_count": 0,
+    "schema_recall": 0.0,
+    "schema_precision": 0.0,
+    "schema_f1": 0.0,
+    "schema_expected_count": 1,
+    "schema_matched_count": 0,
+    "schema_llm_columns": 1,
+    "schema_llm_matched": 0,
+    "column_mapping": [],
+    "column_mapping_source": "value_overlap",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN20_text2sql_chess_ffdd68ae": {
+   "query_id": "SYN20",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "NRG",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 1.0,
+    "best_precision": 1.0,
+    "best_f1": 1.0,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 15,
+    "preferred_matches": 15,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 15,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 15,
+    "variants_evaluated": 1,
+    "llm_row_count": 15,
+    "schema_recall": 0.5,
+    "schema_precision": 0.5,
+    "schema_f1": 0.5,
+    "schema_expected_count": 2,
+    "schema_matched_count": 1,
+    "schema_llm_columns": 2,
+    "schema_llm_matched": 1,
+    "column_mapping": [
+     {
+      "gt_col_idx": 1,
+      "llm_col_name": "cmpLongName"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  },
+  "SYN21_text2sql_chess_f9ebd516": {
+   "query_id": "SYN21",
+   "approach": "text2sql_chess",
+   "query_set": "SYN",
+   "dataset": "NRG",
+   "success": true,
+   "adaptive_metrics": {
+    "best_recall": 0.5,
+    "best_precision": 0.125,
+    "best_f1": 0.2,
+    "essential_active": true,
+    "preferred_active": true,
+    "acceptable_active": false,
+    "essential_matches": 1,
+    "preferred_matches": 1,
+    "acceptable_matches": 0,
+    "best_recall_variant": "all_rows",
+    "best_recall_gt_size": 2,
+    "best_precision_variant": "all_rows",
+    "best_precision_gt_size": 2,
+    "variants_evaluated": 1,
+    "llm_row_count": 8,
+    "schema_recall": 1.0,
+    "schema_precision": 1.0,
+    "schema_f1": 1.0,
+    "schema_expected_count": 1,
+    "schema_matched_count": 1,
+    "schema_llm_columns": 1,
+    "schema_llm_matched": 1,
+    "column_mapping": [
+     {
+      "gt_col_idx": 1,
+      "llm_col_name": "fldName"
+     }
+    ],
+    "column_mapping_source": "value_overlap_with_property",
+    "detected_limit": null,
+    "prefix_match_perfect": false
+   }
+  }
+ }
+}

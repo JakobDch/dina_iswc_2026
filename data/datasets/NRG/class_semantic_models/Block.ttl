@@ -3,16 +3,16 @@
 
 eno:Block eno:dateSynchronized xsd:date ;
     eno:designation xsd:string ;
-    eno:containsWellbore eno:ShallowWellbore ;
-    eno:containsWellbore eno:ExplorationWellbore ;
-    eno:containsWellbore eno:AppraisalWellbore ;
-    eno:containsWellbore eno:WildcatWellbore ;
-    eno:containsWellbore eno:InitialWellbore ;
-    eno:containsWellbore eno:InjectionWellbore ;
-    eno:containsWellbore eno:PlatformBorehole ;
-    eno:containsWellbore eno:Borehole ;
-    eno:containsWellbore eno:SuspReenteredLaterWellbore ;
-    eno:containsWellbore eno:DevelopmentWellbore ;
-    eno:containsWellbore eno:ProductionWellbore ;
-    eno:containsWellbore eno:JunkedWellbore ;
+    eno:containsBorehole eno:ShallowBorehole ;
+    eno:containsBorehole eno:ExplorationBorehole ;
+    eno:containsBorehole eno:AppraisalBorehole ;
+    eno:containsBorehole eno:WildcatBorehole ;
+    eno:containsBorehole eno:InitialBorehole ;
+    eno:containsBorehole eno:InjectionBorehole ;
+    eno:containsBorehole eno:PlatformBorehole ;
+    eno:containsBorehole eno:Borehole ;
+    eno:containsBorehole eno:SuspReenteredLaterBorehole ;
+    eno:containsBorehole eno:DevelopmentBorehole ;
+    eno:containsBorehole eno:ProductionBorehole ;
+    eno:containsBorehole eno:JunkedBorehole ;
     eno:quadrantLocation eno:Quadrant .

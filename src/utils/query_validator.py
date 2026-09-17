@@ -309,8 +309,8 @@ def validate_query(query: str) -> ValidationResult:
             is_valid=False,
             severity=ValidationSeverity.ERROR,
             error_type="EmptyQuery",
-            message="Query is empty.",
-            suggestion="Generate a valid SPARQL query."
+            message="Query ist leer.",
+            suggestion="Generiere eine gültige SPARQL Query."
         )
 
     # Check each anti-pattern
@@ -370,7 +370,7 @@ VALIDATION WARNING: {result.message}
 
 {result.suggestion}
 
-The query will still be executed, but it may fail.
+Die Query wird trotzdem ausgeführt, aber könnte fehlschlagen.
 """
         return True, feedback.strip()
 
@@ -396,111 +396,111 @@ def get_feedback_for_ontop_error(error_message: str, original_query: str) -> str
     if "SQLSerializationException" in error_message:
         if "Only DBFunctionSymbols" in error_message:
             feedback_parts.append("""
-ERROR: OnTop cannot translate this SPARQL expression to SQL.
+ERROR: OnTop kann diesen SPARQL-Ausdruck nicht in SQL übersetzen.
 
-COMMON CAUSES:
-1. Type casts inside aggregation functions: AVG(xsd:decimal(?x)) is NOT supported
-2. Complex expressions inside aggregations: AVG((?a + ?b) / 2) is NOT supported
+HÄUFIGE URSACHEN:
+1. Type-Casts in Aggregationsfunktionen: AVG(xsd:decimal(?x)) ist NICHT unterstützt
+2. Komplexe Ausdrücke in Aggregationen: AVG((?a + ?b) / 2) ist NICHT unterstützt
 
-SOLUTION:
-- Use AVG(?variable) directly without conversion
-- The column must already be numeric in the database
-- If computation is required, compute it in a subquery first, then aggregate
+LÖSUNG:
+- Verwende AVG(?variable) direkt ohne Konvertierung
+- Die Spalte muss bereits numerisch in der Datenbank sein
+- Falls Berechnung nötig: Berechne zuerst in einer Subquery, dann aggregiere
 """)
         elif "does not appear in columnIDs" in error_message:
             feedback_parts.append("""
-ERROR: A variable in the query is not properly defined.
+ERROR: Eine Variable in der Query ist nicht korrekt definiert.
 
-SOLUTION:
-- Check that all SELECTed variables are bound in the WHERE clause
-- For subqueries, make sure variables are forwarded correctly
+LÖSUNG:
+- Prüfe ob alle SELECTierten Variablen im WHERE-Teil definiert sind
+- Bei Subqueries: Stelle sicher dass Variablen korrekt durchgereicht werden
 """)
 
     # Query timeout
     elif "maximum statement execution time exceeded" in error_message:
         feedback_parts.append("""
-ERROR: Query timeout - execution took too long.
+ERROR: Query-Timeout - die Ausführung dauerte zu lange.
 
-CAUSES on this dataset:
-1. Too many results without a LIMIT
-2. Expensive JOINs over large tables (especially EDU Publication/Author)
-3. DISTINCT or GROUP BY over large result sets
+URSACHEN bei diesem Dataset:
+1. Zu viele Ergebnisse ohne LIMIT
+2. Teure JOINs über große Tabellen (besonders EDU Publication/Author)
+3. DISTINCT oder GROUP BY über große Ergebnismengen
 
-SOLUTIONS:
-1. Add a LIMIT (e.g. LIMIT 100)
-2. Use a subquery to filter first: { SELECT ?x WHERE {...} LIMIT 100 }
-3. Add specific FILTERs to reduce the data volume
-4. For EDU: avoid queries on Publication without a filter
+LÖSUNGEN:
+1. Füge LIMIT hinzu (z.B. LIMIT 100)
+2. Verwende eine Subquery um erst zu filtern: { SELECT ?x WHERE {...} LIMIT 100 }
+3. Füge spezifische FILTER hinzu um die Datenmenge einzuschränken
+4. Bei EDU: Vermeide Queries auf Publication ohne Filter
 """)
 
     # UNION mapping bug
     elif "Multiple entries with same key: UNION" in error_message:
         feedback_parts.append("""
-ERROR: OnTop UNION mapping bug
+ERROR: OnTop UNION-Mapping Bug
 
-CAUSE:
-The mapping uses UNION for subclasses and this query triggers an internal error.
+URSACHE:
+Das Mapping verwendet UNION für Subklassen und diese Query triggert einen internen Fehler.
 
-SOLUTION:
-- Use specific subclasses instead of the superclass
-- Example: instead of "?s a eduo:Student" use "?s a eduo:DoctoralCandidate"
-- Or: avoid the property that causes the error
+LÖSUNG:
+- Verwende spezifische Subklassen statt der Superklasse
+- Beispiel: Statt "?s a eduo:Student" verwende "?s a eduo:DoctoralCandidate"
+- Oder: Umgehe das Property das den Fehler verursacht
 """)
 
     # Property paths
     elif "ArbitraryLengthPath" in error_message or "Unsupported arbitrary length path" in error_message:
         feedback_parts.append("""
-ERROR: property paths (*, +, ?) are NOT supported by OnTop!
+ERROR: Property Paths (*, +, ?) werden von OnTop NICHT unterstützt!
 
-SOLUTION:
-- Replace wildcards with explicit properties
-- Instead of "?s prefix:* ?o" -> "?s prefix:specificProperty ?o"
-- For transitive paths: write multiple triple patterns or use UNION
+LÖSUNG:
+- Ersetze Wildcards durch explizite Properties
+- Statt "?s prefix:* ?o" → "?s prefix:specificProperty ?o"
+- Für transitive Pfade: Schreibe mehrere Triple Patterns oder verwende UNION
 """)
 
     # NullPointerException
     elif "NullPointerException" in error_message:
         feedback_parts.append("""
-ERROR: OnTop internal error (NullPointerException)
+ERROR: OnTop interner Fehler (NullPointerException)
 
-CAUSE:
-The query structure causes an internal OnTop error, often with:
-- Complex VALUES clauses
-- Certain OPTIONAL combinations
-- Unusual filter patterns
+URSACHE:
+Die Query-Struktur verursacht einen internen OnTop-Fehler, oft bei:
+- Komplexen VALUES Klauseln
+- Bestimmten OPTIONAL Kombinationen
+- Ungewöhnlichen Filter-Patterns
 
-SOLUTION:
-- Simplify the query
-- Remove VALUES clauses and use FILTER instead
-- Test parts of the query individually
+LÖSUNG:
+- Vereinfache die Query
+- Entferne VALUES Klauseln und verwende stattdessen FILTER
+- Teste Teile der Query einzeln
 """)
 
     # Communications link failure
     elif "CommunicationsException" in error_message or "Communications link failure" in error_message:
         feedback_parts.append("""
-ERROR: lost the connection to the database server
+ERROR: Verbindung zum Datenbank-Server verloren
 
-CAUSE:
-The query was so expensive that the database connection was closed.
+URSACHE:
+Die Query war so teuer dass die Datenbankverbindung abgebrochen wurde.
 
-SOLUTION:
-- Simplify drastically
-- Add LIMIT 10
-- Use fewer JOINs
+LÖSUNG:
+- Drastisch vereinfachen
+- LIMIT 10 hinzufügen
+- Weniger JOINs verwenden
 """)
 
     # Generic fallback
     if not feedback_parts:
         feedback_parts.append(f"""
-ERROR: OnTop query failed
+ERROR: OnTop Query fehlgeschlagen
 
-Error: {error_message[:500]}
+Fehler: {error_message[:500]}
 
-GENERAL TIPS:
-1. Simplify the query
-2. Add a LIMIT
-3. Check that all prefixes are defined correctly
-4. Test parts of the query individually
+ALLGEMEINE TIPPS:
+1. Vereinfache die Query
+2. Füge LIMIT hinzu
+3. Prüfe ob alle Prefixes korrekt definiert sind
+4. Teste Teile der Query einzeln
 """)
 
     return "\n".join(feedback_parts).strip()

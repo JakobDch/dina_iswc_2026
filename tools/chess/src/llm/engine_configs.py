@@ -169,7 +169,7 @@ ENGINE_CONFIGS: Dict[str, Dict[str, Any]] = {
             }
         }
     },
-    # === Added for the experiment (Text2SQL comparison) ===
+    # === Added for DINA experiment (Text2SQL comparison) ===
     "claude-sonnet-4-5": {
         "constructor": ChatAnthropic,
         "params": {"model": "claude-sonnet-4-5-20250929", "temperature": 0, "max_tokens": 4096}

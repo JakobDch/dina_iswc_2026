@@ -197,8 +197,6 @@ class AdaptiveGroundTruth:
     # Cache for loaded tuples (per query_index)
     _cached_tuples: dict[int, set[tuple[str, ...]]] = field(default_factory=dict, repr=False)
     _cached_column_names: dict[int, list[str]] = field(default_factory=dict, repr=False)
-    # Ordered tuples for prefix-match queries (preserves SPARQL response order)
-    _cached_tuples_ordered: dict[int, list[tuple[str, ...]]] = field(default_factory=dict, repr=False)
 
     def get_columns_for_query(self, query_index: int = 0) -> list[ColumnDef]:
         """Get column definitions for a specific query variant.
@@ -245,10 +243,10 @@ class AdaptiveGroundTruth:
         return [i for i, col in enumerate(cols) if col.is_measurement]
 
     def _add_limit_to_query(self, query: str) -> str:
-        """Add LIMIT clause to query if not already present."""
-        if re.search(r'\bLIMIT\s+\d+', query, re.IGNORECASE):
-            return query
-        return query.strip() + f"\nLIMIT {GROUND_TRUTH_RESULT_LIMIT}"
+        """Return query unchanged. GT queries without explicit LIMIT are
+        fetched complete so LLMs returning all rows aren't penalized by a
+        truncated GT."""
+        return query
 
     def execute_query(
         self,
@@ -359,7 +357,6 @@ class AdaptiveGroundTruth:
         """Clear cached query results."""
         self._cached_tuples = {}
         self._cached_column_names = {}
-        self._cached_tuples_ordered = {}
 
     # =========================================================================
     # Compatibility properties (for UseCaseQuery interface)
@@ -494,10 +491,10 @@ class ValueSet:
         return set()
 
     def _add_limit_to_query(self, query: str) -> str:
-        """Add LIMIT clause to query if not already present."""
-        if re.search(r'\bLIMIT\s+\d+', query, re.IGNORECASE):
-            return query  # Already has LIMIT
-        return query.strip() + f"\nLIMIT {GROUND_TRUTH_RESULT_LIMIT}"
+        """Return query unchanged. GT queries without explicit LIMIT are
+        fetched complete so LLMs returning all rows aren't penalized by a
+        truncated GT."""
+        return query
 
     def _execute_sparql_single(self, endpoint: str, timeout: float) -> set[str]:
         """Execute SPARQL query and extract values from first column."""
@@ -721,110 +718,17 @@ def load_large_ground_truth_for_queries(queries: list["AdaptiveGroundTruth"]) ->
     return count
 
 
-def prepopulate_cache_from_json(
-    queries,
-    cache_path,
-) -> tuple[int, int]:
-    """Preload per-query ground-truth tuples into AdaptiveGroundTruth caches.
-
-    This lets evaluation reuse cached GT tuples instead of re-executing the
-    GT SPARQL queries against the endpoint for every LLM run.
-
-    The expected cache format is the output of
-    ``scripts/extract_ground_truth_cache.py`` (``data/cache/ground_truth_full.json``):
-
-        {
-          "queries": {
-            "BASE01": {
-              "query_variants": [
-                {
-                  "query_index": 0,
-                  "success": true,
-                  "gt_tuples": [[...row...], ...],
-                  "gt_columns": [...],
-                },
-                ...
-              ]
-            },
-            ...
-          }
-        }
-
-    The loader supports both wrapped (``{"queries": {...}}``) and flat
-    (``{query_id: entry, ...}``) layouts. Variants already marked as failed
-    (``success=false``) are skipped.
-
-    Args:
-        queries: Iterable of AdaptiveGroundTruth objects to pre-populate.
-        cache_path: Path to ``ground_truth_full.json`` (str or Path).
-
-    Returns:
-        ``(populated_queries, populated_variants)`` counts of cache hits.
-    """
-    import json
-    from pathlib import Path
-
-    path = Path(cache_path)
-    if not path.exists():
-        return (0, 0)
-
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    entries = data.get("queries", data) if isinstance(data, dict) else {}
-
-    populated_queries = 0
-    populated_variants = 0
-    for q in queries:
-        entry = entries.get(getattr(q, "query_id", None))
-        if not entry or not entry.get("success", True):
-            continue
-
-        variants = entry.get("query_variants") or [entry]
-
-        any_variant = False
-        for v in variants:
-            if not v.get("success", True):
-                continue
-            idx = v.get("query_index", 0)
-            gt_tuples_raw = v.get("gt_tuples") or []
-            gt_columns = v.get("gt_columns") or []
-            if not gt_columns:
-                continue
-
-            ordered = [tuple(row) for row in gt_tuples_raw]
-            q._cached_tuples[idx] = set(ordered)
-            q._cached_column_names[idx] = list(gt_columns)
-            if getattr(q, "requires_prefix_match", False):
-                q._cached_tuples_ordered[idx] = ordered
-
-            any_variant = True
-            populated_variants += 1
-
-        if any_variant:
-            populated_queries += 1
-
-    return (populated_queries, populated_variants)
-
-
 __all__ = [
     # Data structures
     "RelevanceLevel",
     "ColumnDef",
     "AdaptiveGroundTruth",
     "SPARQLComplexity",
-    # Cache utilities
-    "prepopulate_cache_from_json",
-    # Adaptive queries (new format with OPTIONAL)
-    "SET_A_ADAPTIVE",
-    "SET_B_ADAPTIVE",
-    "SET_C_ADAPTIVE",
-    "SET_D_ADAPTIVE",
-    "SET_E_ADAPTIVE",
-    "SET_F_ADAPTIVE",
-    "ALL_ADAPTIVE_QUERIES",
+    "ValueSet",
+    # Query lookup functions (queries defined in experimental_corpus.py)
     "get_adaptive_query",
     "get_adaptive_queries_by_set",
-    # Legacy (kept for backwards compatibility - see legacy_tiered_queries_backup.py)
-    "ValueSet",
+    # Ground truth caching for LARGE queries
+    "populate_large_query_cache",
+    "load_large_ground_truth_for_queries",
 ]

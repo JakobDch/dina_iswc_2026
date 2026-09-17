@@ -120,7 +120,6 @@ class LLMTraceCallback(AsyncCallbackHandler):
                 event_type=TraceEventType.TOOL_CALL,
                 phase=self.phase,
                 data={
-                    "tool": "llm_call",
                     "tool_name": "llm_call",
                     "purpose": self.purpose,
                     "model": model_name,
@@ -134,7 +133,6 @@ class LLMTraceCallback(AsyncCallbackHandler):
                 event_type=TraceEventType.TOOL_RESULT,
                 phase=self.phase,
                 data={
-                    "tool": "llm_call",
                     "tool_name": "llm_call",
                     "tokens": {
                         "input": input_tokens,

@@ -140,6 +140,7 @@ def extract_json_from_response(text: str) -> dict:
     raise ValueError(f"No valid JSON found in response")
 
 from src.config import get_settings, normalize_content
+from src.config import get_openrouter_kwargs
 from src.tools.sparql_tools import load_dataset_registry, get_endpoint_for_dataset
 from src.tools.retrieval_tools import SPARQL_GENERATION_TOOLS
 from src.tracing import TraceEvent, TraceEventType, get_tracer
@@ -514,16 +515,17 @@ class SPARQLGenerationAgent:
                 api_key=os.getenv("OPENROUTER_API_KEY", ""),
                 base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
                 temperature=0.1,
+                **get_openrouter_kwargs(llm_model),
             )
         elif llm_model.startswith("openai/"):
             self.llm = ChatOpenAI(
                 model=llm_model,
-                api_key=os.getenv("LOCAL_PROXY_API_KEY", ""),
-                base_url=os.getenv("LOCAL_PROXY_BASE_URL", "http://localhost:4000/v1"),
+                api_key=os.getenv("KI4BUW_API_KEY", ""),
+                base_url=os.getenv("KI4BUW_BASE_URL", "https://llm.ki4buw.de/v1"),
                 temperature=0.1,
             )
         elif is_ollama:
-            ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+            ollama_base_url = os.getenv("REMOTE_OLLAMA_LLAMA31_70B_BASE_URL", "http://localhost:11434")
             self.llm = ChatOllama(
                 model=llm_model,
                 base_url=ollama_base_url,
@@ -926,6 +928,11 @@ class SPARQLGenerationAgent:
             system_prompt = SYSTEM_PROMPT_WITH_ENDPOINTS.format(endpoints_registry=registry_str)
         else:
             system_prompt = SYSTEM_PROMPT
+
+        # UNDER "instructed" ablation: explicit UNDERSPECIFIED status (off by default)
+        from src.config import UNDER_INSTRUCTED, UNDERSPECIFIED_INSTRUCTION_SPARQL
+        if UNDER_INSTRUCTED:
+            system_prompt = system_prompt + UNDERSPECIFIED_INSTRUCTION_SPARQL
 
         # Track messages for this generation (will be returned for persistence)
         final_messages: list[BaseMessage] = []

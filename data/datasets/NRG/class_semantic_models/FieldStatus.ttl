@@ -1,8 +1,0 @@
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix eno: <http://example.org/ontology/energy#> .
-
-eno:FieldStatus eno:condition xsd:string ;
-    eno:dateStatusFrom xsd:date ;
-    eno:dateStatusTo xsd:date ;
-    eno:dateSynchronized xsd:date ;
-    eno:statusForField eno:Deposit .

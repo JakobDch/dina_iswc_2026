@@ -125,6 +125,7 @@ class ExperimentTraceCollector(TraceListener):
         self.success = False
         self.is_unanswerable = False
         self.unanswerable_reason = ""
+        self.stop_kind = ""
         self.error_message: str | None = None
 
         # Retrieved triples tracking
@@ -399,6 +400,7 @@ class ExperimentTraceCollector(TraceListener):
         self.success = data.get("success", False)
         self.is_unanswerable = data.get("is_unanswerable", False)
         self.unanswerable_reason = data.get("unanswerable_reason", "")
+        self.stop_kind = data.get("stop_kind", "") or self.stop_kind
 
     def _handle_agent_start(self, event: TraceEvent) -> None:
         """Handle agent start event for timing tracking."""
@@ -791,6 +793,7 @@ class ExperimentTraceCollector(TraceListener):
             success=self.success,
             is_unanswerable=self.is_unanswerable,
             unanswerable_reason=self.unanswerable_reason,
+            stop_kind=self.stop_kind,
             error_message=self.error_message,
             result_metrics=result_metrics,
             token_usage=token_usage,

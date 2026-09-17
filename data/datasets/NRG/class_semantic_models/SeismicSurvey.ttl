@@ -2,7 +2,7 @@
 @prefix eno: <http://example.org/ontology/energy#> .
 
 eno:SeismicSurvey eno:areaSize3DKm2 xsd:decimal ;
-    eno:currentStatus xsd:string ;
+    eno:currentCondition xsd:string ;
     eno:dateSurveyActualCompleted xsd:date ;
     eno:dateSurveyActualStart xsd:date ;
     eno:dateSurveyPlannedCompleted xsd:date ;
