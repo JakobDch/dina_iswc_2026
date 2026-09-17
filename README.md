@@ -185,7 +185,9 @@ bash scripts/analysis/rebuild_paper_numbers.sh
 | Figure 3, Figure 4 | `scripts/analysis/fig_conditions.py`, `scripts/analysis/fig_lexical_vs_semantic.py` |
 | Figure 5 and the SYN subtypes of Section 6.2 | `scripts/analysis/syn_group_scores.py`, `scripts/analysis/syn_target_ranks.py`, `scripts/analysis/fig_syn_subtypes.py` |
 | Search-call statistics of Section 6.2 (calls, raised k) | `scripts/analysis/syn_search_stats.py` |
-| Tool execution time per run (Section 6.2) | `scripts/analysis/runtime_stats.py` |
+| Misspelled tokens reaching the linking tools (Section 6.1) | `scripts/analysis/typo_tokens.py` |
+| Tool execution time and run time per configuration (Section 6.2) | `scripts/analysis/tool_time.py` |
+| Latency, tool-call and token statistics per backbone | `scripts/analysis/runtime_stats.py` |
 
 All scripts read `results/paper/<backbone>/adaptive_evaluation.json` through
 [scripts/analysis/canonical.py](scripts/analysis/canonical.py) and resolve the raw trace of every record
